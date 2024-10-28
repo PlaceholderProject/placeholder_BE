@@ -31,7 +31,7 @@
 ## 설치
 
 ### 초기 세팅
-
+- 프로젝트를 가져올 폴더로 이동합니다.
 - 파이썬 버전(3.12.4)을 확인하고 가상환경을 만듭니다. pyenv 사용을 권장합니다.
 ```bash
 $ pyenv local 3.12.4
@@ -41,6 +41,10 @@ $ python -m venv venv
 - 가상환경 활성화
 ```bash
 $ source venv/bin/activate
+```
+현재 폴더에 프로젝트를 설치
+```bash
+$ git clone https://github.com/PlaceholderProject/placeholder_BE.git .
 ```
 - 환경 변수 설정(환경 변수 파일은 문의해주세요)
 ```bash
