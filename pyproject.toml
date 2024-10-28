@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "placeholder"
+version = "0.1.0"
+description = ""
+authors = ["lonnie <lonnie@shoeprize.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pytest = "^8.3.3"
+pytest-django = "^4.9.0"
+pre-commit = "^4.0.1"
+python-dotenv = "^1.0.1"
+black = "^24.10.0"
+isort = "^5.13.2"
+flake8 = "^7.1.1"
+django-environ = "^0.11.2"
+psycopg2 = "^2.9.10"
+django-ninja = "^1.3.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,58 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.2.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^static/launch/assets/
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: fix-encoding-pragma
+      - id: check-added-large-files
+  - repo: https://github.com/pre-commit/mirrors-isort
+    rev: v5.10.1
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
+  - repo: https://github.com/pycqa/flake8.git
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        exclude: 'tests|env|docs'
+        args: ["--max-line-length=119"]
+  - repo: https://github.com/psf/black
+    rev: 23.1.0
+    hooks:
+      - id: black
+        args: [ '--line-length=119']
+  - repo: local
+    hooks:
+      - id: cspell
+        name: cspell
+        description: This hook runs cspell spellchecker
+        entry: cspell
+        language: node
+        types: [ file ]
+        args: [ --no-must-find-files ]
+        verbose: true
+        exclude: 'Procfile|static/launch/assets/|.extensions/|\.(conf|svg|css)$|.*/migrations|\.pre-commit-config\.yaml|.gitignore|pyproject.toml|placeholder.iml|poetry.lock|requirements.txt|placeholder/settings/|pytest.ini|placeholder/asgi.py'
+      - id: run-tests
+        name: Run pytest
+        description: Run pytest to execute the test suite before committing
+        entry: poetry run pytest
+        language: system
+        types: [python]
+        pass_filenames: false
+        verbose: true
+        exclude: ^migrations/
+  - repo: https://github.com/python-poetry/poetry
+    rev: '1.4.1'
+    hooks:
+      - id: poetry-export
+        args: [
+          "-f", "requirements.txt",
+          "-o", "requirements.txt",
+          "--without-hashes"
+        ]
