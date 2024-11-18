@@ -1,5 +1,6 @@
 from ninja import NinjaAPI
 from user.apis.auth import auth_router
+from meetup.apis import meetup_router
 from ninja.errors import HttpError, ValidationError
 from django.http import JsonResponse
 import logging
@@ -10,6 +11,7 @@ logger = logging.getLogger(__name__)
 api = NinjaAPI()
 
 api.add_router("/auth/", auth_router)
+api.add_router("/meetup/", meetup_router)
 
 
 def global_exception_handler(request, exc):

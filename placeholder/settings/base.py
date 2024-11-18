@@ -28,6 +28,7 @@ ALLOWED_HOSTS = [
 
 INSTALLED_APPS = [
     "user",
+    "meetup",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
