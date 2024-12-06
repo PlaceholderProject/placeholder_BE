@@ -1,14 +1,13 @@
 import re
 
-from ninja import Router, Schema, File
+from ninja import Router, Schema, File, UploadedFile
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from ninja.security import HttpBearer
-from pydantic import Field, EmailStr, field_validator
+from pydantic import Field, field_validator
 from typing import Optional
-from django.core.files.uploadedfile import InMemoryUploadedFile
-
+from django.core.files.storage import default_storage
 from placeholder.utils.decorators import handle_exceptions
 from placeholder.utils.exceptions import (
     EmailAlreadyExistsException,
@@ -135,6 +134,11 @@ def token_refresh(request, payload: RefreshSchema):
         raise InvalidTokenException()
 
 
+class ProfileUpdateSchema(Schema):
+    nickname: Optional[str] = Field(None, min_length=2, max_length=8, description="2자 이상 8자 이하")
+    bio: Optional[str] = Field(None, max_length=40, description="최대 40자")
+
+
 @auth_router.get("/profile", auth=JWTAuth())
 @handle_exceptions
 def profile(request):
@@ -142,6 +146,36 @@ def profile(request):
         raise UnauthorizedAccessException()
     user = request.auth
     return {
+        'email': user.email,
+        'nickname': user.nickname,
+        'bio': user.bio,
+        'image_url': user.image.url if user.image else None,
+    }
+
+
+@auth_router.put("/profile", auth=JWTAuth())
+@handle_exceptions
+def update_profile(request, payload: ProfileUpdateSchema, image: UploadedFile = File(None)):
+    if not request.auth:
+        raise UnauthorizedAccessException()
+
+    user = request.auth
+
+    if payload.nickname:
+        user.nickname = payload.nickname
+    if payload.bio:
+        user.bio = payload.bio
+
+    if image:
+        if user.image:
+            user.image.delete()
+
+        file_path = default_storage.save(f"profile_images/{image.name}", image)
+        user.image = file_path
+
+    user.save()
+    return {
+        'message': 'Profile updated successfully',
         'email': user.email,
         'nickname': user.nickname,
         'bio': user.bio,
