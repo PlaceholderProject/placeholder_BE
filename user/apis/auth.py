@@ -1,9 +1,11 @@
+import re
+
 from ninja import Router, Schema, File
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from ninja.security import HttpBearer
-from pydantic import Field
+from pydantic import Field, EmailStr, field_validator
 from typing import Optional
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
@@ -46,9 +48,35 @@ class JWTAuth(HttpBearer):
 
 class RegisterSchema(Schema):
     email: str
-    password: str = Field(..., min_length=8)
-    nickname: str = Field(..., min_length=3, max_length=8)
+    password: str = Field(..., min_length=6, max_length=15)
+    nickname: str = Field(..., min_length=2, max_length=8)
     bio: Optional[str] = Field(None, max_length=40)
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, value):
+        email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+        if not re.match(email_regex, value):
+            raise ValueError("유효하지 않은 이메일 형식입니다.")
+        return value
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, value):
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", value):
+            raise ValueError("비밀번호에 최소 1개의 특수문자가 포함되어야 합니다.")
+        if not re.search(r"\d", value):
+            raise ValueError("비밀번호에 최소 1개의 숫자가 포함되어야 합니다.")
+        return value
+
+    @field_validator("nickname")
+    @classmethod
+    def validate_nickname(cls, value):
+        if " " in value:
+            raise ValueError("닉네임에는 공백이 포함될 수 없습니다.")
+        if len(value) < 2 or len(value) > 8:
+            raise ValueError("닉네임은 2자 이상 8자 이하이어야 합니다.")
+        return value
 
 
 class LoginSchema(Schema):
