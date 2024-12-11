@@ -57,7 +57,7 @@ def create_meetup(request, payload: MeetupCreateSchema, image: UploadedFile = Fi
         ad_title=payload.ad_title,
         ad_ended_at=payload.adEndedAt,
         is_public=payload.isPublic,
-        image=payload.image
+        image=image
     )
     categories = Category.objects.filter(id__in=payload.category)
     meetup.category.set(categories)
@@ -74,8 +74,6 @@ def create_meetup(request, payload: MeetupCreateSchema, image: UploadedFile = Fi
         description=meetup.description,
         place=meetup.place,
         placeDescription=meetup.place_description,
-        latitude=meetup.latitude,
-        longitude=meetup.longitude,
         startedAt=meetup.started_at,
         endedAt=meetup.ended_at,
         ad_title=meetup.ad_title,
@@ -125,8 +123,6 @@ def get_meetup(request, meetup_id: int):
         description=meetup.description,
         place=meetup.place,
         placeDescription=meetup.place_description,
-        latitude=meetup.latitude,
-        longitude=meetup.longitude,
         startedAt=meetup.started_at,
         endedAt=meetup.ended_at,
         ad_title=meetup.ad_title,
@@ -164,8 +160,6 @@ def update_meetup(request, meetup_id: int, payload: MeetupCreateSchema):
         description=meetup.description,
         place=meetup.place,
         placeDescription=meetup.place_description,
-        latitude=meetup.latitude,
-        longitude=meetup.longitude,
         startedAt=meetup.started_at,
         endedAt=meetup.ended_at,
         ad_title=meetup.ad_title,
