@@ -13,14 +13,11 @@ class MeetupCreateSchema(Schema):
     description: str
     place: str
     placeDescription: str
-    latitude: float
-    longitude: float
     startedAt: datetime
     endedAt: datetime
     ad_title: str
     adEndedAt: datetime
     isPublic: bool
-    image: str
     category: List[int]
 
 

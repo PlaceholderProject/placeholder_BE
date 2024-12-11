@@ -1,4 +1,4 @@
-from ninja import Router
+from ninja import Router, Schema, File, UploadedFile
 from typing import List
 from django.shortcuts import get_object_or_404
 from meetup.models import Meetup, Category
@@ -42,7 +42,7 @@ class JWTAuth(HttpBearer):
 
 @meetup_router.post("/", response=MeetupResponseSchema, auth=JWTAuth())
 @handle_exceptions
-def create_meetup(request, payload: MeetupCreateSchema):
+def create_meetup(request, payload: MeetupCreateSchema, image: UploadedFile = File(None)):
     user = request.auth
     meetup = Meetup.objects.create(
         organizer=user,
@@ -86,7 +86,7 @@ def create_meetup(request, payload: MeetupCreateSchema):
     )
 
 
-@meetup_router.get("/", response=List[MeetupListResponseSchema], auth=JWTAuth())
+@meetup_router.get("/", response=List[MeetupListResponseSchema])
 @handle_exceptions
 def list_meetups(request):
     meetups = Meetup.objects.select_related('organizer').prefetch_related('category').all()
