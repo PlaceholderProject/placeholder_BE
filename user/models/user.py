@@ -23,10 +23,11 @@ class UserManager(BaseUserManager):
 
         return self.create_user(email, password, nickname, **extra_fields)
 
+
 class User(AbstractBaseUser, BaseModel, PermissionsMixin):
     email = models.EmailField(verbose_name="이메일", max_length=64, unique=True)
     nickname = models.CharField(verbose_name="별명", max_length=8, unique=True)
-    image = models.ImageField(verbose_name="프로필 이미지", null=True, blank=True)
+    image = models.ImageField(verbose_name="프로필 이미지", upload_to="profile_images", null=True, blank=True)
     bio = models.CharField(verbose_name="자기소개", max_length=40, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

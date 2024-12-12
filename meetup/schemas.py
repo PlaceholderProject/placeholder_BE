@@ -1,5 +1,5 @@
 from ninja import Schema
-from typing import List, Optional
+from typing import List, Optional, Set
 from datetime import datetime
 
 
@@ -18,7 +18,7 @@ class MeetupCreateSchema(Schema):
     ad_title: str
     adEndedAt: datetime
     isPublic: bool
-    category: List[int]
+    category: Set[int]
 
 
 class MeetupResponseSchema(Schema):
@@ -29,8 +29,6 @@ class MeetupResponseSchema(Schema):
     description: str
     place: str
     placeDescription: str
-    latitude: float
-    longitude: float
     startedAt: datetime
     endedAt: datetime
     ad_title: str
