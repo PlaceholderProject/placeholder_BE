@@ -1,14 +1,7 @@
 from django.db import models
 from placeholder.models.base import BaseModel
 from user.models.user import User
-
-
-class Category(BaseModel):
-    name = models.CharField(max_length=255)
-    slug = models.CharField(max_length=255, unique=True)
-
-    def __str__(self):
-        return self.name
+from meetup.models.category import Category
 
 
 class Meetup(BaseModel):

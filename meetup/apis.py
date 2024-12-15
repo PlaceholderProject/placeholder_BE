@@ -1,15 +1,15 @@
-from ninja import Router, Schema, File, UploadedFile
-from typing import List
+from ninja import Router, File, UploadedFile
 from django.shortcuts import get_object_or_404
 from meetup.models import Meetup, Category
 from meetup.schemas import (
     MeetupCreateSchema,
     MeetupResponseSchema,
-    MeetupListResponseSchema
+    MeetupListResponseSchema, OrganizerSchema
 )
 from placeholder.utils.decorators import handle_exceptions
 from placeholder.utils.exceptions import UnauthorizedAccessException
 from placeholder.utils.auth import JWTAuth
+from django.db import transaction
 
 meetup_router = Router()
 
@@ -18,22 +18,25 @@ meetup_router = Router()
 @handle_exceptions
 def create_meetup(request, payload: MeetupCreateSchema, image: UploadedFile = File(None)):
     user = request.auth
-    meetup = Meetup.objects.create(
-        organizer=user,
-        name=payload.name,
-        description=payload.description,
-        place=payload.place,
-        place_description=payload.placeDescription,
-        started_at=payload.startedAt,
-        ended_at=payload.endedAt,
-        ad_title=payload.ad_title,
-        ad_ended_at=payload.adEndedAt,
-        is_public=payload.isPublic,
-        image=image,
-    )
-    categories = Category.objects.filter(id__in=payload.category)
-    meetup.category.set(categories)
-    meetup.save()
+
+    with transaction.atomic():
+        meetup = Meetup.objects.create(
+            organizer=user,
+            name=payload.name,
+            description=payload.description,
+            place=payload.place,
+            place_description=payload.placeDescription,
+            started_at=payload.startedAt,
+            ended_at=payload.endedAt,
+            ad_title=payload.adTitle,
+            ad_ended_at=payload.adEndedAt,
+            is_public=payload.isPublic,
+            image=image,
+        )
+
+        categories = Category.objects.filter(id__in=payload.category).all()
+        meetup.category.set(categories)
+        meetup.save()
 
     return 201, MeetupResponseSchema(
         id=meetup.id,
@@ -48,15 +51,15 @@ def create_meetup(request, payload: MeetupCreateSchema, image: UploadedFile = Fi
         placeDescription=meetup.place_description,
         startedAt=meetup.started_at,
         endedAt=meetup.ended_at,
-        ad_title=meetup.ad_title,
+        adTitle=meetup.ad_title,
         adEndedAt=meetup.ad_ended_at,
         isPublic=meetup.is_public,
         image=meetup.image,
-        category=[cat.name for cat in meetup.category.all()],
+        category=[cat.id for cat in meetup.category.all()],
     )
 
 
-@meetup_router.get("", response={200: MeetupListResponseSchema}, auth=JWTAuth())
+@meetup_router.get("", response={200: list[MeetupListResponseSchema]}, auth=JWTAuth())
 @handle_exceptions
 def get_meetups(request):
     meetups = Meetup.objects.select_related('organizer').prefetch_related('category').all()
@@ -66,15 +69,15 @@ def get_meetups(request):
         response.append(MeetupListResponseSchema(
             id=meetup.id,
             isOrganizer=is_organizer,
-            organizer={
-                "name": meetup.organizer.nickname,
-                "profile_image": meetup.organizer.image.url if meetup.organizer.image else None
-            },
+            organizer=OrganizerSchema(
+                name=meetup.organizer.nickname,
+                profile_image=meetup.organizer.image.url if meetup.organizer.image else None
+            ),
             startedAt=meetup.started_at,
             endedAt=meetup.ended_at,
             adEndedAt=meetup.ad_ended_at,
             isPublic=meetup.is_public,
-            image=meetup.image,
+            image=meetup.image.url if meetup.image else None,
         ))
     return response
 
@@ -97,7 +100,7 @@ def get_meetup(request, meetup_id: int):
         placeDescription=meetup.place_description,
         startedAt=meetup.started_at,
         endedAt=meetup.ended_at,
-        ad_title=meetup.ad_title,
+        adTitle=meetup.ad_title,
         adEndedAt=meetup.ad_ended_at,
         isPublic=meetup.is_public,
         image=meetup.image,
@@ -134,11 +137,11 @@ def update_meetup(request, meetup_id: int, payload: MeetupCreateSchema):
         placeDescription=meetup.place_description,
         startedAt=meetup.started_at,
         endedAt=meetup.ended_at,
-        ad_title=meetup.ad_title,
+        adTitle=meetup.ad_title,
         adEndedAt=meetup.ad_ended_at,
         isPublic=meetup.is_public,
         image=meetup.image,
-        category=[cat.name for cat in meetup.category.all()],
+        category=meetup.category,
     )
 
 

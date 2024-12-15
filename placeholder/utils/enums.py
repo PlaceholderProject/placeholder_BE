@@ -1,7 +1,14 @@
 from enum import Enum
+from abc import ABC
 
 
-class APIStatus(Enum):
+class StrEnum(Enum):
+    @classmethod
+    def get_values(cls):
+        return [member.value for member in cls]
+
+
+class APIStatus(StrEnum):
     SUCCESS = (200, "성공적으로 처리되었습니다.")
     BAD_REQUEST = (400, "잘못된 요청입니다.")
     EMAIL_ALREADY_EXISTS = (400, "이미 사용 중인 이메일입니다.")

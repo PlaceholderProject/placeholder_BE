@@ -1,6 +1,7 @@
 from ninja import Schema
-from typing import List, Optional, Set
+from typing import List, Optional
 from datetime import datetime
+from pydantic import model_validator
 
 
 class OrganizerSchema(Schema):
@@ -15,10 +16,16 @@ class MeetupCreateSchema(Schema):
     placeDescription: str
     startedAt: datetime
     endedAt: datetime
-    ad_title: str
+    adTitle: str
     adEndedAt: datetime
     isPublic: bool
-    category: Set[int]
+    category: List[int] | str
+
+    @model_validator(mode="before")
+    def split_category(self):
+        if isinstance(self.category, str):
+            self.category = [int(x.strip()) for x in self.category.split(",")]
+        return self
 
 
 class MeetupResponseSchema(Schema):
@@ -31,11 +38,17 @@ class MeetupResponseSchema(Schema):
     placeDescription: str
     startedAt: datetime
     endedAt: datetime
-    ad_title: str
+    adTitle: str
     adEndedAt: datetime
     isPublic: bool
     image: str | None = None
-    category: List[str]
+    category: List[int] | str
+
+    @model_validator(mode="before")
+    def split_category(self):
+        if isinstance(self.category, List):
+            self.category = ", ".join(str(id) for id in self.category)
+        return self
 
 
 class MeetupListResponseSchema(Schema):
