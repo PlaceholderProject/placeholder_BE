@@ -1,5 +1,4 @@
 from django.contrib import admin
-from meetup.models.category import Category
 from meetup.models.meetup import Meetup
 
 
@@ -7,7 +6,3 @@ from meetup.models.meetup import Meetup
 class MeetupAdmin(admin.ModelAdmin):
     pass
 
-
-@admin.register(Category)
-class MeetupAdmin(admin.ModelAdmin):
-    pass

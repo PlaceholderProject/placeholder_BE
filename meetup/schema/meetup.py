@@ -14,18 +14,12 @@ class MeetupCreateSchema(Schema):
     description: str
     place: str
     placeDescription: str
-    startedAt: datetime
-    endedAt: datetime
+    startedAt: datetime | None = None
+    endedAt: datetime | None = None
     adTitle: str
     adEndedAt: datetime
     isPublic: bool
-    category: List[int] | str
-
-    @model_validator(mode="before")
-    def split_category(self):
-        if isinstance(self.category, str):
-            self.category = [int(x.strip()) for x in self.category.split(",")]
-        return self
+    category: str
 
 
 class MeetupResponseSchema(Schema):
@@ -36,19 +30,13 @@ class MeetupResponseSchema(Schema):
     description: str
     place: str
     placeDescription: str
-    startedAt: datetime
-    endedAt: datetime
+    startedAt: datetime | None = None
+    endedAt: datetime | None = None
     adTitle: str
     adEndedAt: datetime
     isPublic: bool
     image: str | None = None
-    category: List[int] | str
-
-    @model_validator(mode="before")
-    def split_category(self):
-        if isinstance(self.category, List):
-            self.category = ", ".join(str(id) for id in self.category)
-        return self
+    category: str | None = None
 
 
 class MeetupListResponseSchema(Schema):

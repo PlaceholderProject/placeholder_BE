@@ -1,1 +1,1 @@
-from meetup.models.meetup import Meetup, Category
+from meetup.models.meetup import Meetup

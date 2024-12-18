@@ -1,7 +1,7 @@
 from ninja import Router, File, UploadedFile
 from django.shortcuts import get_object_or_404
-from meetup.models import Meetup, Category
-from meetup.schemas import (
+from meetup.models import Meetup
+from meetup.schema.meetup import (
     MeetupCreateSchema,
     MeetupResponseSchema,
     MeetupListResponseSchema, OrganizerSchema
@@ -34,10 +34,6 @@ def create_meetup(request, payload: MeetupCreateSchema, image: UploadedFile = Fi
             image=image,
         )
 
-        categories = Category.objects.filter(id__in=payload.category).all()
-        meetup.category.set(categories)
-        meetup.save()
-
     return 201, MeetupResponseSchema(
         id=meetup.id,
         isOrganizer=True,
@@ -55,7 +51,7 @@ def create_meetup(request, payload: MeetupCreateSchema, image: UploadedFile = Fi
         adEndedAt=meetup.ad_ended_at,
         isPublic=meetup.is_public,
         image=meetup.image,
-        category=[cat.id for cat in meetup.category.all()],
+        category=meetup.category,
     )
 
 
@@ -104,7 +100,7 @@ def get_meetup(request, meetup_id: int):
         adEndedAt=meetup.ad_ended_at,
         isPublic=meetup.is_public,
         image=meetup.image,
-        category=[cat.id for cat in meetup.category.all()],
+        category=meetup.category,
     )
 
 
@@ -115,14 +111,7 @@ def update_meetup(request, meetup_id: int, payload: MeetupCreateSchema):
     if meetup.organizer != request.auth:
         raise UnauthorizedAccessException()
 
-    for field, value in payload.dict().items():
-        if field != 'category':
-            setattr(meetup, field.lower(), value)
-    meetup.save()
-
-    if 'category' in payload.dict():
-        categories = Category.objects.filter(id__in=payload.category)
-        meetup.category.set(categories)
+    meetup.save(payload.dict())
 
     return MeetupResponseSchema(
         id=meetup.id,

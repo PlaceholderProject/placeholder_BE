@@ -18,7 +18,8 @@ class UserCreateSchema(Schema):
         email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
         if not re.match(email_regex, value):
             raise ValueError("유효하지 않은 이메일 형식입니다.")
-        if User.objects.filter(email=value).exists():
+
+        if User.objects.filter(email=value).exists() is True:
             raise ValueError("이미 가입된 이메일 입니다. 다른 이메일을 사용해주세요.")
         return value
 
@@ -38,7 +39,7 @@ class UserCreateSchema(Schema):
             raise ValueError("닉네임에는 공백이 포함될 수 없습니다.")
         if len(value) < 2 or len(value) > 8:
             raise ValueError("닉네임은 2자 이상 8자 이하이어야 합니다.")
-        if User.objects.filter(nickname=value).exists():
+        if User.objects.filter(nickname=value).exists() is True:
             raise ValueError("사용 중인 닉네임 입니다. 다른 닉네임을 사용해 주세요.")
         return value
 
