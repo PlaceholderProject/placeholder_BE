@@ -1,24 +1,33 @@
 import re
 
-from ninja import Schema
 from pydantic import field_validator
 from user.models.user import User
+from placeholder.schema.base import BaseSchema
 
 
-class LoginSchema(Schema):
+class TokenSchema(BaseSchema):
+    access: str
+    refresh: str
+
+
+class LoginSchema(BaseSchema):
     email: str
     password: str
 
 
-class RefreshSchema(Schema):
+class AccessSchema(BaseSchema):
+    access: str
+
+
+class RefreshSchema(BaseSchema):
     refresh: str
 
 
-class PasswordCheckSchema(Schema):
+class PasswordCheckSchema(BaseSchema):
     password: str
 
 
-class EmailCheckSchema(Schema):
+class EmailCheckSchema(BaseSchema):
     email: str
 
     @field_validator("email")
@@ -32,7 +41,7 @@ class EmailCheckSchema(Schema):
         return value
 
 
-class NicknameCheckSchema(Schema):
+class NicknameCheckSchema(BaseSchema):
     nickname: str
 
     @field_validator("nickname")

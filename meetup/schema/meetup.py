@@ -1,12 +1,10 @@
 from ninja import Schema
-from typing import List, Optional
 from datetime import datetime
-from pydantic import model_validator
 
 
 class OrganizerSchema(Schema):
     name: str
-    profile_image: Optional[str]
+    profile_image: str | None = None
 
 
 class MeetupCreateSchema(Schema):

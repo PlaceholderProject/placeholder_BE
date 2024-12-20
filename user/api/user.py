@@ -1,30 +1,30 @@
 from ninja import Router, File
 from django.core.files.storage import default_storage
 from placeholder.utils.decorators import handle_exceptions
-from user.schema.user import UserCreateSchema, UserUpdateSchema
+from user.schema.user import UserCreateSchema, UserUpdateSchema, UserSchema
 from placeholder.utils.auth import JWTAuth
 from ninja.files import UploadedFile
 from user.models.user import User
 user_router = Router()
 
 
-@user_router.post("")
+@user_router.post("", response={201: None})
 @handle_exceptions
 def create_user(request, payload: UserCreateSchema):
     User.objects.create_user(**payload.dict())
-    return 201
+    return 201, None
 
 
-@user_router.get("", auth=JWTAuth())
+@user_router.get("", auth=JWTAuth(), response={200: UserSchema})
 @handle_exceptions
 def get_user(request):
     user = request.auth
 
-    return {
+    return 200, {
         'email': user.email,
         'nickname': user.nickname,
         'bio': user.bio,
-        'image_url': user.image.url if user.image else None,
+        'image_url': user.image.url if user.image else "",
     }
 
 
@@ -45,14 +45,14 @@ def update_user(request, payload: UserUpdateSchema, image: UploadedFile = File(N
         'email': user.email,
         'nickname': user.nickname,
         'bio': user.bio,
-        'image_url': default_storage.url(user.image.name) if user.image and user.image.name else None,
+        'image_url': user.image.url if user.image else "",
     }
 
 
-@user_router.delete("", auth=JWTAuth())
+@user_router.delete("", auth=JWTAuth(), response={204: None})
 @handle_exceptions
 def delete_user(request):
     user = request.auth
 
     user.delete()
-    return 204
+    return 204, None

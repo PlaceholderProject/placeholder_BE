@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
-from placeholder.models.base import BaseModel
+from placeholder.model.base import BaseModel
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, nickname=None, **extra_fields):
