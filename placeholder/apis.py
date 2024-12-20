@@ -1,4 +1,4 @@
-from ninja import NinjaAPI
+from ninja import NinjaAPI, Swagger
 from user.api.auth import auth_router
 from user.api.user import user_router
 from meetup.api.meetup import meetup_router
@@ -9,7 +9,7 @@ from placeholder.utils.enums import APIStatus
 
 logger = logging.getLogger(__name__)
 
-api = NinjaAPI()
+api = NinjaAPI(docs=Swagger(settings={"by_alias": True}))
 
 api.add_router("/auth", auth_router)
 api.add_router("/user", user_router)

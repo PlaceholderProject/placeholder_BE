@@ -5,7 +5,9 @@ from user.schema.user import UserCreateSchema, UserUpdateSchema, UserSchema
 from placeholder.utils.auth import JWTAuth
 from ninja.files import UploadedFile
 from user.models.user import User
-user_router = Router()
+
+
+user_router = Router(tags=["User"])
 
 
 @user_router.post("", response={201: None})

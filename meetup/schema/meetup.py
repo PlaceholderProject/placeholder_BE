@@ -1,48 +1,49 @@
 from ninja import Schema
 from datetime import datetime
+from placeholder.schema.base import BaseSchema
 
 
-class OrganizerSchema(Schema):
-    name: str
+class OrganizerSchema(BaseSchema):
+    nickname: str
     profile_image: str | None = None
 
 
-class MeetupCreateSchema(Schema):
+class MeetupCreateSchema(BaseSchema):
     name: str
     description: str
     place: str
-    placeDescription: str
-    startedAt: datetime | None = None
-    endedAt: datetime | None = None
-    adTitle: str
-    adEndedAt: datetime
-    isPublic: bool
-    category: str
+    place_description: str
+    started_at: datetime | None = None
+    ended_at: datetime | None = None
+    ad_title: str
+    ad_ended_at: datetime
+    is_public: bool
+    category: str | None = None
 
 
-class MeetupResponseSchema(Schema):
+class MeetupResponseSchema(BaseSchema):
     id: int
-    isOrganizer: bool
+    is_organizer: bool | None = True
     organizer: OrganizerSchema
     name: str
     description: str
     place: str
-    placeDescription: str
-    startedAt: datetime | None = None
-    endedAt: datetime | None = None
-    adTitle: str
-    adEndedAt: datetime
-    isPublic: bool
+    place_description: str
+    started_at: datetime | None = None
+    ended_at: datetime | None = None
+    ad_title: str
+    ad_ended_at: datetime
+    is_public: bool
     image: str | None = None
     category: str | None = None
 
 
-class MeetupListResponseSchema(Schema):
+class MeetupListResponseSchema(BaseSchema):
     id: int
-    isOrganizer: bool
+    is_organizer: bool | None = False
     organizer: OrganizerSchema
-    startedAt: datetime
-    endedAt: datetime
-    adEndedAt: datetime
-    isPublic: bool
-    image: str
+    started_at: datetime | None = None
+    ended_at: datetime | None = None
+    ad_ended_at: datetime | None = None
+    is_public: bool
+    image: str | None = ""

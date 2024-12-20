@@ -10,7 +10,7 @@ from user.schema.auth import LoginSchema, RefreshSchema, PasswordCheckSchema, To
 from placeholder.utils.auth import JWTAuth
 from placeholder.schema.base import Error
 
-auth_router = Router()
+auth_router = Router(tags=["Auth"])
 
 
 @auth_router.post("/email", response={200: None})
