@@ -1,9 +1,6 @@
-from ninja import Schema
 from datetime import datetime
 
-from meetup.models import Meetup
-from placeholder.schema.base import BaseSchema
-from pydantic import field_validator, model_validator, validator, computed_field
+from placeholder.schemas.base import BaseSchema
 
 
 class OrganizerSchema(BaseSchema):
@@ -39,21 +36,6 @@ class MeetupResponseSchema(BaseSchema):
     is_public: bool
     image: str | None = None
     category: str | None = None
-
-
-
-# class MeetupResponseSchema(BaseModelSchema):
-#     organizer = OrganizerSchema
-#     class Meta:
-#         model = Meetup
-#         fields = ["id", "name", "discription", "place", "place_description", "started_at", "ended_at", "ad_title", "ad_title", "ad_ended_at", "is_public", "image", "category"]
-
-
-    # @computed_field
-    # @property
-    # def organizer(self):
-    #     return OrganizerSchema()
-    #
 
 
 class MeetupListResponseSchema(BaseSchema):

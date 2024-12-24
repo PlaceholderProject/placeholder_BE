@@ -1,5 +1,5 @@
 from django.db import models
-from placeholder.model.base import BaseModel
+from placeholder.models.base import BaseModel
 from user.models.user import User
 
 

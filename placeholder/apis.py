@@ -1,7 +1,8 @@
 from ninja import NinjaAPI, Swagger
-from user.api.auth import auth_router
-from user.api.user import user_router
-from meetup.api.meetup import meetup_router
+from user.apis.auth import auth_router
+from user.apis.user import user_router
+from meetup.apis.meetup import meetup_router
+from meetup.apis.member import meetup_router as member_router
 from ninja.errors import HttpError, ValidationError
 from django.http import JsonResponse
 import logging

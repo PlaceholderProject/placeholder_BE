@@ -2,7 +2,7 @@ import re
 
 from pydantic import field_validator
 from user.models.user import User
-from placeholder.schema.base import BaseSchema
+from placeholder.schemas.base import BaseSchema
 
 
 class TokenSchema(BaseSchema):

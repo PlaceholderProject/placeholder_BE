@@ -1,7 +1,7 @@
 from ninja import Router, File
 from django.core.files.storage import default_storage
 from placeholder.utils.decorators import handle_exceptions
-from user.schema.user import UserCreateSchema, UserUpdateSchema, UserSchema
+from user.schemas.user import UserCreateSchema, UserUpdateSchema, UserSchema
 from placeholder.utils.auth import JWTAuth
 from ninja.files import UploadedFile
 from user.models.user import User

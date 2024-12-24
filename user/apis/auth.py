@@ -6,9 +6,9 @@ from placeholder.utils.exceptions import (
     InvalidCredentialsException,
     InvalidTokenException,
 )
-from user.schema.auth import LoginSchema, RefreshSchema, PasswordCheckSchema, TokenSchema, EmailCheckSchema, NicknameCheckSchema, AccessSchema
+from user.schemas.auth import LoginSchema, RefreshSchema, PasswordCheckSchema, TokenSchema, EmailCheckSchema, NicknameCheckSchema, AccessSchema
 from placeholder.utils.auth import JWTAuth
-from placeholder.schema.base import Error
+from placeholder.schemas.base import Error
 
 auth_router = Router(tags=["Auth"])
 

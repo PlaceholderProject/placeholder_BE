@@ -1,7 +1,7 @@
 from pydantic import Field, field_validator
 import re
 from user.models.user import User
-from placeholder.schema.base import BaseSchema
+from placeholder.schemas.base import BaseSchema
 from ninja.orm import create_schema
 
 

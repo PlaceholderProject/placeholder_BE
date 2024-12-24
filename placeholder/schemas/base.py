@@ -1,6 +1,6 @@
 from pydantic.alias_generators import to_camel
 from ninja import Schema
-from typing import List
+from typing import List, Dict
 
 
 class BaseSchema(Schema):
