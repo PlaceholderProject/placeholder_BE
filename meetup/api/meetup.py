@@ -11,7 +11,7 @@ from placeholder.utils.decorators import handle_exceptions
 from placeholder.utils.exceptions import UnauthorizedAccessException
 from placeholder.utils.auth import JWTAuth
 from django.db import transaction
-from typing import List
+from placeholder.schema.base import ResultSchema
 
 
 meetup_router = Router(tags=["Meetup"])
@@ -27,16 +27,15 @@ def create_meetup(request, payload: MeetupCreateSchema, image: UploadedFile = Fi
     return 201, meetup
 
 
-@meetup_router.get("", response={200: List[MeetupListResponseSchema]}, auth=JWTAuth(), by_alias=True)
+@meetup_router.get("", response={200: ResultSchema}, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
 def get_meetups(request):
     meetups = Meetup.objects.select_related('organizer').all()
     response = []
     for meetup in meetups:
-        is_organizer = meetup.organizer == request.auth
         response.append(MeetupListResponseSchema(
             id=meetup.id,
-            isOrganizer=is_organizer,
+            isOrganizer=meetup.organizer == request.auth,
             organizer=OrganizerSchema(
                 nickname=meetup.organizer.nickname,
                 profile_image=meetup.organizer.image.url if meetup.organizer.image else None
@@ -47,33 +46,31 @@ def get_meetups(request):
             isPublic=meetup.is_public,
             image=meetup.image.url if meetup.image else "",
         ))
-    return 200, response
+    return 200, {"result": response}
 
 
 @meetup_router.get("/{meetup_id}", response={200: MeetupResponseSchema}, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
 def get_meetup(request, meetup_id: int):
     meetup = get_object_or_404(Meetup, id=meetup_id)
-    is_organizer = meetup.organizer == request.auth
-    return MeetupResponseSchema(
-        id=meetup.id,
-        isOrganizer=is_organizer,
-        organizer={
-            "name": meetup.organizer.nickname,
-            "profile_image": meetup.organizer.image.url if meetup.organizer.image else None
-        },
-        name=meetup.name,
-        description=meetup.description,
-        place=meetup.place,
-        placeDescription=meetup.place_description,
-        startedAt=meetup.started_at,
-        endedAt=meetup.ended_at,
-        adTitle=meetup.ad_title,
-        adEndedAt=meetup.ad_ended_at,
-        isPublic=meetup.is_public,
-        image=meetup.image,
-        category=meetup.category,
-    )
+    response_data = {
+        "id": meetup.id,
+        "is_organizer": meetup.organizer == request.auth,
+        "organizer": meetup.organizer,
+        "name": meetup.name,
+        "description": meetup.description,
+        "place": meetup.place,
+        "place_description": meetup.place_description,
+        "started_at": meetup.started_at,
+        "ended_at": meetup.ended_at,
+        "ad_title": meetup.ad_title,
+        "ad_ended_at": meetup.ad_ended_at,
+        "is_public": meetup.is_public,
+        "image": meetup.image.url if meetup.image else None,
+        "category": meetup.category,
+    }
+
+    return 200, response_data
 
 
 @meetup_router.put("/{meetup_id}", response={200: MeetupResponseSchema}, auth=JWTAuth(), by_alias=True)
@@ -82,8 +79,10 @@ def update_meetup(request, meetup_id: int, payload: MeetupCreateSchema):
     meetup = get_object_or_404(Meetup, id=meetup_id)
     if meetup.organizer != request.auth:
         raise UnauthorizedAccessException()
-
-    return meetup.update(**payload.dict())
+    for attr, value in payload.dict().items():
+        setattr(meetup, attr, value)
+    meetup.save()
+    return meetup
 
 
 @meetup_router.delete("/{meetup_id}", response={204: None}, auth=JWTAuth())

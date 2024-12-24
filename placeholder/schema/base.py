@@ -1,5 +1,6 @@
 from pydantic.alias_generators import to_camel
 from ninja import Schema
+from typing import List
 
 
 class BaseSchema(Schema):
@@ -12,6 +13,10 @@ class BaseSchema(Schema):
 
     def dict(self, **kwargs):
         return super().model_dump(by_alias=kwargs.get("by_alias", True))
+
+
+class ResultSchema(BaseSchema):
+    result: List
 
 
 class Error(Schema):
