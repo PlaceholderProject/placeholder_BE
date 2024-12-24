@@ -60,3 +60,8 @@ class UserUpdateSchema(BaseSchema):
 
 
 UserSchema = create_schema(User, fields=["email", "nickname", "bio", "image"])
+
+
+class UserProfileSchema(BaseSchema):
+    nickname: str
+    image: str | None = None

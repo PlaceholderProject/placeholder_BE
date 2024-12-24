@@ -1,11 +1,54 @@
 from enum import Enum
 from abc import ABC
+from types import DynamicClassAttribute
 
 
 class StrEnum(Enum):
     @classmethod
-    def get_values(cls):
-        return [member.value for member in cls]
+    def from_str(cls, value: str):
+        for member in cls._member_map_.values():
+            if member._value_[0] == value:
+                return member
+
+    def __str__(self):
+        return self._value_[0]
+
+    @classmethod
+    def choices(cls):
+        return list(map(lambda c: c._value_, cls))
+
+    @classmethod
+    def names(cls):
+        return list(map(lambda c: c.name, cls))
+
+    @classmethod
+    def values(cls):
+        return list(map(lambda c: c.value, cls))
+
+    @classmethod
+    def labels(cls):
+        return list(map(lambda c: c._value_[1], cls))
+
+    @classmethod
+    def from_label(cls, label):
+        for c in cls:
+            if c.label == label:
+                return c
+        return None
+
+    @DynamicClassAttribute
+    def value(self):
+        return self._value_[0]
+
+    @DynamicClassAttribute
+    def label(self):
+        return self._value_[1]
+
+    def __eq__(self, other):
+        if self.__class__ is other.__class__:
+            return self.value == other.value
+
+        return self.value == other
 
 
 class APIStatus(StrEnum):

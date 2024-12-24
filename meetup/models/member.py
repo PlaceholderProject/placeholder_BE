@@ -7,8 +7,16 @@ from placeholder.utils.enums import StrEnum
 
 class Member(BaseModel):
     class MemberRole(StrEnum):
-        ORGANIZER = "ORGANIZER", "모임장"
-        MEMBER = "MEMBER", "모임원"
+        ORGANIZER = "organizer", "모임장"
+        MEMBER = "member", "모임원"
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="회원")
     meetup = models.ForeignKey(Meetup, on_delete=models.CASCADE, verbose_name="모임")
-    role = models.CharField(verbose_name="역할", choices=MemberRole.get_values())
+    role = models.CharField(verbose_name="역할", choices=MemberRole.choices(), blank=True, default=MemberRole.MEMBER.value)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                name="unique_member_user_meetup",
+                fields=["user", "meetup"],
+            ),
+        ]

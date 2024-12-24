@@ -1,12 +1,9 @@
-from ninja import Router
-
 from meetup.models import Meetup
 from placeholder.utils.decorators import handle_exceptions
 from meetup.schemas.member import MemberListSchema
 from meetup.apis.meetup import meetup_router
 from meetup.models.member import Member
 from placeholder.schemas.base import ResultSchema, Error
-from ninja.responses import codes_4xx
 from placeholder.utils.auth import JWTAuth
 
 
@@ -24,7 +21,6 @@ def delete_member(request, meetup_id, member_id):
     if not meetup:
         return 404, {"message": "존재 하지 않는 모임 입니다."}
     if not request.auth == meetup.organizer:
-        print(request.user, meetup.organizer)
         return 401, {"message": "권한이 없습니다."}
 
     member = Member.objects.filter(id=member_id).first()
