@@ -6,7 +6,8 @@ from placeholder.utils.exceptions import (
     InvalidCredentialsException,
     InvalidTokenException,
 )
-from user.schemas.auth import LoginSchema, RefreshSchema, PasswordCheckSchema, TokenSchema, EmailCheckSchema, NicknameCheckSchema, AccessSchema
+from user.schemas.auth import LoginSchema, RefreshSchema, PasswordCheckSchema, TokenSchema, EmailCheckSchema, \
+    NicknameCheckSchema, AccessSchema, PasswordResetSchema
 from placeholder.utils.auth import JWTAuth
 from placeholder.schemas.base import ErrorSchema
 
@@ -57,3 +58,16 @@ def check_password(request, payload: PasswordCheckSchema):
     if user.check_password(payload.password):
         return 200, None
     return 400, {"message": "비밀번호가 맞지 않습니다"}
+
+
+@auth_router.post("/reset-password", auth=JWTAuth(), response={200: TokenSchema})
+@handle_exceptions
+def reset_password(request, payload: PasswordResetSchema):
+    user = request.auth
+    user.set_password(payload.password)
+    user.save()
+    refresh = RefreshToken.for_user(user)
+    return 200, {
+        'access': str(refresh.access_token),
+        'refresh': str(refresh),
+    }

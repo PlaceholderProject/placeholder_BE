@@ -54,3 +54,14 @@ class NicknameCheckSchema(BaseSchema):
         if User.objects.filter(nickname=value).exists():
             raise ValueError("사용 중인 닉네임 입니다. 다른 닉네임을 사용해 주세요.")
         return value
+
+
+class PasswordResetSchema(PasswordCheckSchema):
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, value):
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", value):
+            raise ValueError("비밀번호에 최소 1개의 특수문자가 포함되어야 합니다.")
+        if not re.search(r"\d", value):
+            raise ValueError("비밀번호에 최소 1개의 숫자가 포함되어야 합니다.")
+        return value
