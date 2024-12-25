@@ -19,5 +19,5 @@ class ResultSchema(BaseSchema):
     result: List
 
 
-class Error(Schema):
+class ErrorSchema(BaseSchema):
     message: str

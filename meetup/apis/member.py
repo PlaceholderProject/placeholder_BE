@@ -3,7 +3,7 @@ from placeholder.utils.decorators import handle_exceptions
 from meetup.schemas.member import MemberListSchema
 from meetup.apis.meetup import meetup_router
 from meetup.models.member import Member
-from placeholder.schemas.base import ResultSchema, Error
+from placeholder.schemas.base import ResultSchema, ErrorSchema
 from placeholder.utils.auth import JWTAuth
 
 
@@ -14,7 +14,7 @@ def get_members(request, meetup_id):
     return 200, {"result": [MemberListSchema(id=member.id, meetup_id=member.meetup_id, user_id=member.user_id, role=member.role) for member in members]}
 
 
-@meetup_router.delete("{meetup_id}/member/{member_id}", response={204: None, 401: Error, 404: Error}, auth=JWTAuth(), by_alias=True)
+@meetup_router.delete("{meetup_id}/member/{member_id}", response={204: None, 401: ErrorSchema, 404: ErrorSchema}, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
 def delete_member(request, meetup_id, member_id):
     meetup = Meetup.objects.filter(id=meetup_id).first()

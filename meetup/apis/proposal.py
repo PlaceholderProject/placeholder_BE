@@ -5,14 +5,14 @@ from meetup.models.proposal import Proposal
 from placeholder.utils.decorators import handle_exceptions
 from meetup.schemas.proposal import ProposalListSchema, ProposalSchema, ProposalCreateSchema
 from meetup.apis.meetup import meetup_router
-from placeholder.schemas.base import ResultSchema, Error
+from placeholder.schemas.base import ResultSchema, ErrorSchema
 from placeholder.utils.auth import JWTAuth
 
 
 proposal_router = Router(tags=["Proposal"])
 
 
-@meetup_router.get("{meetup_id}/proposal", response={200: ResultSchema, 401: Error}, auth=JWTAuth(), by_alias=True)
+@meetup_router.get("{meetup_id}/proposal", response={200: ResultSchema, 401: ErrorSchema}, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
 def get_proposals(request, meetup_id):
     meetup = Meetup.objects.filter(id=meetup_id).first()
@@ -25,7 +25,7 @@ def get_proposals(request, meetup_id):
     return 200, {"result": [ProposalListSchema(id=proposal.id, user=proposal.user, text=proposal.text, status=proposal.status) for proposal in proposals]}
 
 
-@meetup_router.post("{meetup_id}/proposal", response={201: ProposalSchema, 404: Error}, auth=JWTAuth(), by_alias=True)
+@meetup_router.post("{meetup_id}/proposal", response={201: ProposalSchema, 404: ErrorSchema}, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
 def post_proposal(request, meetup_id, payload: ProposalCreateSchema):
     meetup = Meetup.objects.filter(id=meetup_id).first()
@@ -35,7 +35,7 @@ def post_proposal(request, meetup_id, payload: ProposalCreateSchema):
     return 201, proposal
 
 
-@meetup_router.delete("{meetup_id}/proposal/{proposal_id}", response={204: None, 401: Error, 404: Error}, auth=JWTAuth(), by_alias=True)
+@meetup_router.delete("{meetup_id}/proposal/{proposal_id}", response={204: None, 401: ErrorSchema, 404: ErrorSchema}, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
 def delete_proposal(request, meetup_id, proposal_id):
     meetup = Meetup.objects.filter(id=meetup_id).first()
@@ -51,7 +51,7 @@ def delete_proposal(request, meetup_id, proposal_id):
     return 204, None
 
 
-@proposal_router.post("{proposal_id}/acceptance", response={200: ProposalSchema, 401: Error, 404: Error}, auth=JWTAuth(), by_alias=True)
+@proposal_router.post("{proposal_id}/acceptance", response={200: ProposalSchema, 401: ErrorSchema, 404: ErrorSchema}, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
 def accept_proposal(request, proposal_id):
     proposal = Proposal.objects.prefetch_related("meetup").filter(id=proposal_id).first()
@@ -67,7 +67,7 @@ def accept_proposal(request, proposal_id):
     return proposal
 
 
-@proposal_router.post("{proposal_id}/refuse", response={200: ProposalSchema, 401: Error, 404: Error}, auth=JWTAuth(), by_alias=True)
+@proposal_router.post("{proposal_id}/refuse", response={200: ProposalSchema, 401: ErrorSchema, 404: ErrorSchema}, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
 def refuse_proposal(request, proposal_id):
     proposal = Proposal.objects.filter(id=proposal_id).first()
@@ -80,7 +80,7 @@ def refuse_proposal(request, proposal_id):
     return proposal
 
 
-@proposal_router.post("{proposal_id}/ignore", response={200: ProposalSchema, 401: Error, 404: Error}, auth=JWTAuth(), by_alias=True)
+@proposal_router.post("{proposal_id}/ignore", response={200: ProposalSchema, 401: ErrorSchema, 404: ErrorSchema}, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
 def ignore_proposal(request, proposal_id):
     proposal = Proposal.objects.filter(id=proposal_id).first()

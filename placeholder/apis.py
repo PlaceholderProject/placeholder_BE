@@ -4,6 +4,7 @@ from user.apis.user import user_router
 from meetup.apis.meetup import meetup_router
 from meetup.apis.member import meetup_router
 from meetup.apis.proposal import meetup_router, proposal_router
+from meetup.apis.schedule import meetup_router, schedule_router
 from ninja.errors import HttpError, ValidationError
 from django.http import JsonResponse
 import logging
@@ -17,6 +18,8 @@ api.add_router("/auth", auth_router)
 api.add_router("/user", user_router)
 api.add_router("/meetup", meetup_router)
 api.add_router("/proposal", proposal_router)
+api.add_router("/schedule", schedule_router)
+
 
 def global_exception_handler(request, exc):
     if isinstance(exc, HttpError):

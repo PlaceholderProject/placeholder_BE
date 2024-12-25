@@ -8,7 +8,7 @@ from placeholder.utils.exceptions import (
 )
 from user.schemas.auth import LoginSchema, RefreshSchema, PasswordCheckSchema, TokenSchema, EmailCheckSchema, NicknameCheckSchema, AccessSchema
 from placeholder.utils.auth import JWTAuth
-from placeholder.schemas.base import Error
+from placeholder.schemas.base import ErrorSchema
 
 auth_router = Router(tags=["Auth"])
 
@@ -49,7 +49,7 @@ def refresh_token(request, payload: RefreshSchema):
         raise InvalidTokenException()
 
 
-@auth_router.post("/password", auth=JWTAuth(), response={200: None, 400: Error})
+@auth_router.post("/password", auth=JWTAuth(), response={200: None, 400: ErrorSchema})
 @handle_exceptions
 def check_password(request, payload: PasswordCheckSchema):
     user = request.auth
