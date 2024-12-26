@@ -1,0 +1,40 @@
+// cSpell Settings
+{
+  // Version of the setting file.  Always 0.2
+  "version": "0.2",
+  // language - current active spelling language
+  "language": "en",
+  // words - list of words to be always considered correct
+  "words": [
+
+    //python packages
+    "pydantic"
+    //python packages
+  ],
+  "ignorePaths": [
+    "venv/**",
+    "*/settings/*.py",
+    "application*.yaml",
+    ".pre-commit-config.yaml",
+    "cspell.json",
+    ".vscode/**",
+    "*.scss",
+    "/static/**",
+    "/templates/**",
+    "package.json",
+    "stage.py",
+    "requirements.txt",
+    "requirements-dev.txt",
+    "Procfile.*",
+    ".ebextensions/*",
+    "*.toml",
+    ".style.yapf",
+    ".gitignore",
+    "*.sh",
+    "*.css",
+    "docker-compose.yaml",
+    "README.md",
+    "tests/**/*.json",
+    "tests/settings.py"
+  ]
+}

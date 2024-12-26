@@ -1,11 +1,11 @@
-from ninja import Router, File
-from django.core.files.storage import default_storage
-from placeholder.utils.decorators import handle_exceptions
-from user.schemas.user import UserCreateSchema, UserUpdateSchema, UserSchema
-from placeholder.utils.auth import JWTAuth
+# -*- coding: utf-8 -*-
+from ninja import File, Router
 from ninja.files import UploadedFile
-from user.models.user import User
 
+from placeholder.utils.auth import JWTAuth
+from placeholder.utils.decorators import handle_exceptions
+from user.models.user import User
+from user.schemas.user import UserCreateSchema, UserSchema, UserUpdateSchema
 
 user_router = Router(tags=["User"])
 
@@ -17,41 +17,29 @@ def create_user(request, payload: UserCreateSchema):
     return 201, None
 
 
-@user_router.get("", auth=JWTAuth(), response={200: UserSchema})
+@user_router.get("", response={200: UserSchema}, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
 def get_user(request):
     user = request.auth
-
-    return 200, {
-        'email': user.email,
-        'nickname': user.nickname,
-        'bio': user.bio,
-        'image_url': user.image.url if user.image else "",
-    }
+    return 200, user
 
 
-@user_router.put("", auth=JWTAuth())
+@user_router.put("", response={200: UserSchema}, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
 def update_user(request, payload: UserUpdateSchema, image: UploadedFile = File(None)):
     user = request.auth
 
-    user.nickname = payload.nickname
-    user.bio = payload.bio
+    for attr, value in payload.dict().items():
+        setattr(user, attr, value)
 
     if image:
-        file_path = default_storage.save(f"profile_images/{image.name}", image)
-        user.image = file_path
+        user.image = image
     user.save()
 
-    return 200, {
-        'email': user.email,
-        'nickname': user.nickname,
-        'bio': user.bio,
-        'image_url': user.image.url if user.image else "",
-    }
+    return 200, user
 
 
-@user_router.delete("", auth=JWTAuth(), response={204: None})
+@user_router.delete("", response={204: None}, auth=JWTAuth())
 @handle_exceptions
 def delete_user(request):
     user = request.auth
