@@ -8,7 +8,8 @@
   "words": [
 
     //python packages
-    "pydantic"
+    "pydantic",
+    "simplejwt"
     //python packages
   ],
   "ignorePaths": [

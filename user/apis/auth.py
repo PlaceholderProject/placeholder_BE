@@ -1,15 +1,25 @@
-from ninja import Router
+# -*- coding: utf-8 -*-
 from django.contrib.auth import authenticate
+from ninja import Router
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from placeholder.schemas.base import ErrorSchema
+from placeholder.utils.auth import JWTAuth
 from placeholder.utils.decorators import handle_exceptions
 from placeholder.utils.exceptions import (
     InvalidCredentialsException,
     InvalidTokenException,
 )
-from user.schemas.auth import LoginSchema, RefreshSchema, PasswordCheckSchema, TokenSchema, EmailCheckSchema, \
-    NicknameCheckSchema, AccessSchema, PasswordResetSchema
-from placeholder.utils.auth import JWTAuth
-from placeholder.schemas.base import ErrorSchema
+from user.schemas.auth import (
+    AccessSchema,
+    EmailCheckSchema,
+    LoginSchema,
+    NicknameCheckSchema,
+    PasswordCheckSchema,
+    PasswordResetSchema,
+    RefreshSchema,
+    TokenSchema,
+)
 
 auth_router = Router(tags=["Auth"])
 
@@ -33,19 +43,19 @@ def login(request, payload: LoginSchema):
     if user is not None:
         refresh = RefreshToken.for_user(user)
         return 200, {
-            'access': str(refresh.access_token),
-            'refresh': str(refresh),
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
         }
     else:
         raise InvalidCredentialsException()
 
 
-@auth_router.post("/refresh", auth=JWTAuth(), response={200: AccessSchema})
+@auth_router.post("/refresh", response={200: AccessSchema})
 @handle_exceptions
 def refresh_token(request, payload: RefreshSchema):
     try:
         refresh = RefreshToken(payload.refresh)
-        return 200, {'access': str(refresh.access_token)}
+        return 200, {"access": str(refresh.access_token)}
     except Exception:
         raise InvalidTokenException()
 
@@ -68,6 +78,6 @@ def reset_password(request, payload: PasswordResetSchema):
     user.save()
     refresh = RefreshToken.for_user(user)
     return 200, {
-        'access': str(refresh.access_token),
-        'refresh': str(refresh),
+        "access": str(refresh.access_token),
+        "refresh": str(refresh),
     }
