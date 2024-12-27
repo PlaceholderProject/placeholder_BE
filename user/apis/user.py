@@ -17,14 +17,14 @@ def create_user(request, payload: UserCreateSchema):
     return 201, None
 
 
-@user_router.get("", response={200: UserSchema}, auth=JWTAuth(), by_alias=True)
+@user_router.get("/me", response={200: UserSchema}, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
 def get_user(request):
     user = request.auth
     return 200, user
 
 
-@user_router.put("", response={200: UserSchema}, auth=JWTAuth(), by_alias=True)
+@user_router.put("/me", response={200: UserSchema}, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
 def update_user(request, payload: UserUpdateSchema, image: UploadedFile = File(None)):
     user = request.auth
@@ -39,7 +39,7 @@ def update_user(request, payload: UserUpdateSchema, image: UploadedFile = File(N
     return 200, user
 
 
-@user_router.delete("", response={204: None}, auth=JWTAuth())
+@user_router.delete("/me", response={204: None}, auth=JWTAuth())
 @handle_exceptions
 def delete_user(request):
     user = request.auth
