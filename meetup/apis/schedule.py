@@ -1,17 +1,24 @@
-from ninja import Router, File, UploadedFile
-
-from meetup.models import Meetup, Schedule, Member
-from meetup.schemas.schedule import ScheduleSchema, ScheduleCreateSchema
-from placeholder.utils.decorators import handle_exceptions
-from meetup.apis.meetup import meetup_router
-from placeholder.schemas.base import ResultSchema, ErrorSchema
-from placeholder.utils.auth import JWTAuth
+# -*- coding: utf-8 -*-
 from django.db import transaction
+from ninja import File, Router, UploadedFile
+
+from meetup.apis.meetup import meetup_router
+from meetup.models import Meetup, Member, Schedule
+from meetup.schemas.schedule import ScheduleCreateSchema, ScheduleSchema
+from placeholder.schemas.base import ErrorSchema, ResultSchema
+from placeholder.utils.auth import JWTAuth
+from placeholder.utils.decorators import handle_exceptions
 
 schedule_router = Router(tags=["Schedule"])
 
 
-@meetup_router.get("{meetup_id}/schedule", response={200: ResultSchema, 401: ErrorSchema}, auth=JWTAuth(), by_alias=True)
+@meetup_router.get(
+    "{meetup_id}/schedule",
+    response={200: ResultSchema, 401: ErrorSchema},
+    auth=JWTAuth(),
+    by_alias=True,
+    tags=["Schedule"],
+)
 @handle_exceptions
 def get_schedules(request, meetup_id):
     meetup = Meetup.objects.filter(id=meetup_id).first()
@@ -19,7 +26,9 @@ def get_schedules(request, meetup_id):
         return 404, {"message": "존재 하지 않은 모임입니다."}
     if not Member.objects.filter(meetup_id=meetup_id, user=request.auth).exists():
         return 401, {"message": "권한이 없습니다."}
-    schedules = Schedule.objects.prefetch_related("participant").filter(meetup_id=meetup_id).order_by("-scheduled_at").all()
+    schedules = (
+        Schedule.objects.prefetch_related("participant").filter(meetup_id=meetup_id).order_by("-scheduled_at").all()
+    )
     result = [
         ScheduleSchema(
             id=schedule.id,
@@ -32,12 +41,19 @@ def get_schedules(request, meetup_id):
             longitude=schedule.longitude,
             memo=schedule.memo,
             image=schedule.image,
-        ) for schedule in schedules
+        )
+        for schedule in schedules
     ]
     return 200, {"result": result}
 
 
-@meetup_router.post("{meetup_id}/schedule", response={201: ScheduleSchema, 401: ErrorSchema}, auth=JWTAuth(), by_alias=True)
+@meetup_router.post(
+    "{meetup_id}/schedule",
+    response={201: ScheduleSchema, 401: ErrorSchema},
+    auth=JWTAuth(),
+    by_alias=True,
+    tags=["Schedule"],
+)
 @handle_exceptions
 def create_schedule(request, meetup_id, payload: ScheduleCreateSchema, image: UploadedFile = File(None)):
     meetup = Meetup.objects.filter(id=meetup_id).first()
@@ -52,7 +68,9 @@ def create_schedule(request, meetup_id, payload: ScheduleCreateSchema, image: Up
     return 201, schedule
 
 
-@schedule_router.get("{schedule_id}", response={200: ScheduleSchema, 401: ErrorSchema, 404: ErrorSchema}, auth=JWTAuth(), by_alias=True)
+@schedule_router.get(
+    "{schedule_id}", response={200: ScheduleSchema, 401: ErrorSchema, 404: ErrorSchema}, auth=JWTAuth(), by_alias=True
+)
 @handle_exceptions
 def get_schedule(request, schedule_id):
     if not Member.objects.filter(meetup__schedule__id=schedule_id, user=request.auth).exists():
@@ -63,7 +81,9 @@ def get_schedule(request, schedule_id):
     return 200, schedule
 
 
-@schedule_router.put("{schedule_id}", response={200: ScheduleSchema, 401: ErrorSchema, 404: ErrorSchema}, auth=JWTAuth(), by_alias=True)
+@schedule_router.put(
+    "{schedule_id}", response={200: ScheduleSchema, 401: ErrorSchema, 404: ErrorSchema}, auth=JWTAuth(), by_alias=True
+)
 @handle_exceptions
 def update_schedule(request, schedule_id, payload: ScheduleCreateSchema):
     if not Member.objects.filter(meetup__schedule__id=schedule_id, user=request.auth).exists():
@@ -77,7 +97,9 @@ def update_schedule(request, schedule_id, payload: ScheduleCreateSchema):
     return 200, schedule
 
 
-@schedule_router.delete("{schedule_id}", response={204: None, 401: ErrorSchema, 404: ErrorSchema}, auth=JWTAuth(), by_alias=True)
+@schedule_router.delete(
+    "{schedule_id}", response={204: None, 401: ErrorSchema, 404: ErrorSchema}, auth=JWTAuth(), by_alias=True
+)
 @handle_exceptions
 def delete_schedule(request, schedule_id):
     if not Member.objects.filter(meetup__schedule__id=schedule_id, user=request.auth).exists():

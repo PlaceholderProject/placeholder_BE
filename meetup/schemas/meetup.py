@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 from datetime import datetime
+from typing import List
 
 from placeholder.schemas.base import BaseSchema
 
@@ -21,7 +23,7 @@ class MeetupCreateSchema(BaseSchema):
     category: str | None = None
 
 
-class MeetupResponseSchema(BaseSchema):
+class MeetupSchema(BaseSchema):
     id: int
     is_organizer: bool | None = True
     organizer: OrganizerSchema
@@ -36,9 +38,10 @@ class MeetupResponseSchema(BaseSchema):
     is_public: bool
     image: str | None = None
     category: str | None = None
+    like_count: int
 
 
-class MeetupListResponseSchema(BaseSchema):
+class MeetupListSchema(BaseSchema):
     id: int
     is_organizer: bool | None = False
     organizer: OrganizerSchema
@@ -47,3 +50,8 @@ class MeetupListResponseSchema(BaseSchema):
     ad_ended_at: datetime | None = None
     is_public: bool
     image: str | None = ""
+    like_count: int
+
+
+class MeetupListResultSchema(BaseSchema):
+    result: List[MeetupListSchema]
