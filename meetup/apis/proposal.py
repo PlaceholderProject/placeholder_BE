@@ -6,10 +6,10 @@ from meetup.models import Meetup, Member
 from meetup.models.proposal import Proposal
 from meetup.schemas.proposal import (
     ProposalCreateSchema,
-    ProposalListSchema,
+    ProposalListResultSchema,
     ProposalSchema,
 )
-from placeholder.schemas.base import ErrorSchema, ResultSchema
+from placeholder.schemas.base import ErrorSchema
 from placeholder.utils.auth import JWTAuth
 from placeholder.utils.decorators import handle_exceptions
 
@@ -18,7 +18,7 @@ proposal_router = Router(tags=["Proposal"])
 
 @meetup_router.get(
     "{meetup_id}/proposal",
-    response={200: ResultSchema, 401: ErrorSchema},
+    response={200: ProposalListResultSchema, 401: ErrorSchema},
     auth=JWTAuth(),
     by_alias=True,
     tags=["Proposal"],
@@ -32,12 +32,7 @@ def get_proposals(request, meetup_id):
         return 401, {"message": "권한이 없습니다."}
     proposals = Proposal.objects.prefetch_related("user").filter(meetup_id=meetup_id).all()
 
-    return 200, {
-        "result": [
-            ProposalListSchema(id=proposal.id, user=proposal.user, text=proposal.text, status=proposal.status)
-            for proposal in proposals
-        ]
-    }
+    return 200, {"result": proposals}
 
 
 @meetup_router.post(

@@ -1,8 +1,12 @@
+# -*- coding: utf-8 -*-
+from typing import List
+
+from ninja.orm import create_schema
+from pydantic import Field
+
+from meetup.models.proposal import Proposal
 from placeholder.schemas.base import BaseSchema
 from user.schemas.user import UserProfileSchema
-from ninja.orm import create_schema
-from meetup.models.proposal import Proposal
-from pydantic import Field
 
 
 class ProposalListSchema(BaseSchema):
@@ -17,3 +21,7 @@ class ProposalCreateSchema(BaseSchema):
 
 
 ProposalSchema = create_schema(Proposal, fields=["id", "user", "meetup", "text", "status"])
+
+
+class ProposalListResultSchema(BaseSchema):
+    result: List[ProposalListSchema]
