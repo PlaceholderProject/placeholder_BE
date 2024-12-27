@@ -6,7 +6,7 @@
   "language": "en",
   // words - list of words to be always considered correct
   "words": [
-
+    "meetup_router",
     //python packages
     "pydantic",
     "simplejwt"
