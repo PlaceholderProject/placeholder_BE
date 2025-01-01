@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+from meetup.models.comment import MeetupComment, ScheduleComment
 from meetup.models.meetup import Meetup
 from meetup.models.member import Member
 from meetup.models.proposal import Proposal

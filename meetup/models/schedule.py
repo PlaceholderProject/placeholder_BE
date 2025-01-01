@@ -1,6 +1,8 @@
-from meetup.models import Meetup
-from placeholder.models.base import BaseModel
+# -*- coding: utf-8 -*-
 from django.db import models
+
+from meetup.models.meetup import Meetup
+from placeholder.models.base import BaseModel
 from user.models.user import User
 
 

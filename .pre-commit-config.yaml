@@ -20,7 +20,7 @@ repos:
     rev: 7.0.0
     hooks:
       - id: flake8
-        exclude: 'tests|env|docs'
+        exclude: 'tests|env|docs|__init__'
         args: ["--max-line-length=119"]
   - repo: https://github.com/psf/black
     rev: 23.1.0
