@@ -8,6 +8,7 @@ from meetup.schemas.comment import (
     CommentSchema,
     MeetupCommentCreateSchema,
 )
+from notification.models import Notification
 from placeholder.schemas.base import ErrorSchema
 from placeholder.utils.auth import JWTAuth
 from placeholder.utils.decorators import handle_exceptions
@@ -25,13 +26,22 @@ meetup_comment_router = Router(tags=["MeetupComment"])
 @handle_exceptions
 def create_meetup_comment(request, meetup_id, payload: MeetupCommentCreateSchema):
     user = request.auth
-    if not Meetup.objects.filter(id=meetup_id).exists():
+    meetup = Meetup.objects.filter(id=meetup_id).first()
+    if not meetup:
         return 404, {"message": "존재 하지 않은 모임 입니다."}
     if not Member.objects.filter(user=user, meetup_id=meetup_id).exists():
         return 401, {"message": "권한이 없습니다."}
     comment = MeetupComment.objects.select_related("user").create(
-        user=user, meetup_id=meetup_id, **payload.dict(by_alias=False)
+        user=user, meetup_id=meetup_id, meetup=meetup, **payload.dict(by_alias=False)
     )
+    if user != meetup.organizer:
+        Notification.objects.create(
+            type=Notification.NotificationType.MEETUP_COMMENT.value,
+            model_id=meetup.id,
+            sender=user,
+            recipient=meetup.organizer,
+            message=f"{meetup.ad_title}에서 {user.nickname}님이 회원님의 모임에 댓글을 달았습니다.",
+        )
     return 201, comment
 
 
@@ -55,19 +65,30 @@ def get_comments(request, meetup_id):
 
 @meetup_comment_router.post(
     "{comment_id}/reply",
-    response={200: CommentSchema, 401: ErrorSchema, 404: ErrorSchema},
+    response={201: CommentSchema, 401: ErrorSchema, 404: ErrorSchema},
     auth=JWTAuth(),
     by_alias=True,
 )
 @handle_exceptions
 def create_comment_reply(request, comment_id, payload: MeetupCommentCreateSchema):
     user = request.auth
-    comment = MeetupComment.objects.select_related("user").filter(id=comment_id, is_delete=False).first()
+    comment = MeetupComment.objects.select_related("user", "meetup").filter(id=comment_id, is_delete=False).first()
     if not comment:
         return 404, {"message": "존재 하지 않은 댓글 입니다."}
+    meetup = comment.meetup
     root = comment.root or comment_id
     recipient = comment.user.nickname
-    reply = MeetupComment.objects.create(root=root, recipient=recipient, user=user, **payload.dict(by_alias=False))
+    reply = MeetupComment.objects.create(
+        root=root, recipient=recipient, user=user, meetup=meetup, **payload.dict(by_alias=False)
+    )
+    if user != meetup.organizer:
+        Notification.objects.create(
+            type=Notification.NotificationType.MEETUP_COMMENT.value,
+            model_id=meetup.id,
+            sender=user,
+            recipient=meetup.organizer,
+            message=f"{meetup.ad_title}에서 {user.nickname}님이 회원님의 댓글에 답글을 달았습니다.",
+        )
     return 201, reply
 
 

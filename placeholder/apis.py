@@ -11,6 +11,7 @@ from meetup.apis.member import member_router
 from meetup.apis.proposal import proposal_router
 from meetup.apis.schedule import schedule_router
 from meetup.apis.schedule_comment import schedule_comment_router
+from notification.apis.notification import notification_router
 from placeholder.utils.enums import APIStatus
 from user.apis.auth import auth_router
 from user.apis.user import user_router
@@ -27,6 +28,7 @@ api.add_router("/proposal", proposal_router)
 api.add_router("/schedule", schedule_router)
 api.add_router("/meetup-comment", meetup_comment_router)
 api.add_router("/schedule-comment", schedule_comment_router)
+api.add_router("/notification", notification_router)
 
 
 def global_exception_handler(request, exc):

@@ -17,7 +17,7 @@ class Comment(BaseModel):
     recipient = models.CharField(max_length=16, null=True, blank=True, default=None)
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="작성자")
     text = models.TextField()
-    is_delete = models.BooleanField(default=True)
+    is_delete = models.BooleanField(default=False)
 
     object = CommentManager
 

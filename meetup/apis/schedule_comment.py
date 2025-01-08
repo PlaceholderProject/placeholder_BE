@@ -8,6 +8,7 @@ from meetup.schemas.comment import (
     CommentSchema,
     ScheduleCommentCreateSchema,
 )
+from notification.models import Notification
 from placeholder.schemas.base import ErrorSchema
 from placeholder.utils.auth import JWTAuth
 from placeholder.utils.decorators import handle_exceptions
@@ -25,7 +26,7 @@ schedule_comment_router = Router(tags=["ScheduleComment"])
 @handle_exceptions
 def create_schedule_comment(request, schedule_id, payload: ScheduleCommentCreateSchema):
     user = request.auth
-    schedule = Schedule.objects.filter(id=schedule_id).first()
+    schedule = Schedule.objects.prefetch_related("participant").filter(id=schedule_id).first()
     if not schedule:
         return 404, {"message": "존재 하지 않은 스케줄 입니다."}
     if not Member.objects.filter(meetup__schedule__id=schedule_id, user=user).exists():
@@ -33,6 +34,19 @@ def create_schedule_comment(request, schedule_id, payload: ScheduleCommentCreate
     comment = ScheduleComment.objects.select_related("user").create(
         user=user, schedule_id=schedule_id, **payload.dict(by_alias=False)
     )
+    notifications = [
+        Notification(
+            type=Notification.NotificationType.SCHEDULE_COMMENT.value,
+            model_id=schedule.id,
+            sender=user,
+            recipient=member.organizer,
+            message=f"{schedule.memo}에서 {user.nickname}님이 댓글을 달았습니다.",
+        )
+        for member in schedule.participant
+        if not member == user
+    ]
+    Notification.objects.bulk_create(notifications)
+
     return 201, comment
 
 
@@ -53,6 +67,37 @@ def get_schedules(request, schedule_id):
         return 401, {"message": "권한이 없습니다."}
     comments = ScheduleComment.objects.select_related("user").order_by("root", "-created_at")
     return 200, {"result": comments}
+
+
+@schedule_router.post(
+    "{comment_id}/reply",
+    response={201: CommentSchema, 401: ErrorSchema, 404: ErrorSchema},
+    auth=JWTAuth(),
+    by_alias=True,
+)
+@handle_exceptions
+def create_schedule_reply(request, comment_id, payload: ScheduleCommentCreateSchema):
+    user = request.auth
+    comment = ScheduleComment.objects.select_related("user", "schedule").filter(id=comment_id, is_delete=False).first()
+    if not comment:
+        return 404, {"message": "존재하지 않은 댓글 입니다"}
+    schedule = comment.schedule
+    root = comment.root or comment_id
+    recipient = comment.user.nickname
+    reply = ScheduleComment.objects.create(
+        root=root, recipient=recipient, user=user, schedule=schedule, **payload.dict(by_alias=False)
+    )
+
+    if user != comment.user:
+        Notification.objects.create(
+            type=Notification.NotificationType.SCHEDULE_COMMENT.value,
+            model_id=schedule.id,
+            sender=user,
+            recipient=comment.user,
+            message=f"{user.nickname}님이 회원님의 댓글에 댓글을 달았습니다.",
+        )
+
+    return 201, reply
 
 
 @schedule_comment_router.put(
