@@ -69,7 +69,7 @@ def get_schedules(request, schedule_id):
     return 200, {"result": comments}
 
 
-@schedule_router.post(
+@schedule_comment_router.post(
     "{comment_id}/reply",
     response={201: CommentSchema, 401: ErrorSchema, 404: ErrorSchema},
     auth=JWTAuth(),

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import transaction
-from django.db.models import F
+from django.db.models import Exists, F, OuterRef
 from ninja import File, Router, UploadedFile
 
 from meetup.models import Meetup, Member
@@ -32,14 +32,25 @@ def create_meetup(request, payload: MeetupCreateSchema, image: UploadedFile = Fi
 @meetup_router.get("", response={200: MeetupListResultSchema}, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
 def get_meetups(request):
-    meetups = Meetup.objects.select_related("organizer").all()
+    user = request.auth
+    meetups = (
+        Meetup.objects.select_related("organizer")
+        .annotate(is_like=Exists(MeetupLike.objects.filter(meetup_id=OuterRef("id"), user=user)))
+        .all()
+    )
     return 200, {"result": meetups}
 
 
 @meetup_router.get("{meetup_id}", response={200: MeetupSchema, 404: ErrorSchema}, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
 def get_meetup(request, meetup_id: int):
-    meetup = Meetup.objects.filter(id=meetup_id).first()
+    user = request.auth
+    meetup = (
+        Meetup.objects.select_related("organizer")
+        .annotate(is_like=Exists(MeetupLike.objects.filter(meetup_id=OuterRef("id"), user=user)))
+        .filter(id=meetup_id)
+        .first()
+    )
     if not meetup:
         return 404, {"message": "존재 하지 않은 모임 입니다."}
     return 200, meetup
@@ -48,10 +59,16 @@ def get_meetup(request, meetup_id: int):
 @meetup_router.put("{meetup_id}", response={200: MeetupSchema, 404: ErrorSchema}, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
 def update_meetup(request, meetup_id: int, payload: MeetupCreateSchema, image: UploadedFile = File(None)):
-    meetup = Meetup.objects.filter(id=meetup_id).first()
+    user = request.auth
+    meetup = (
+        Meetup.objects.select_related("organizer")
+        .annotate(is_like=Exists(MeetupLike.objects.filter(meetup_id=OuterRef("id"), user=user)))
+        .filter(id=meetup_id)
+        .first()
+    )
     if not meetup:
         return 404, {"message": "존재 하지 않은 모임 입니다."}
-    if meetup.organizer != request.auth:
+    if meetup.organizer != user:
         raise UnauthorizedAccessException()
     for attr, value in payload.dict().items():
         setattr(meetup, attr, value)

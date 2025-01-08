@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
+from datetime import date
 from typing import List
 
 from placeholder.schemas.base import BaseSchema
@@ -15,10 +15,10 @@ class MeetupCreateSchema(BaseSchema):
     description: str
     place: str
     place_description: str
-    started_at: datetime | None = None
-    ended_at: datetime | None = None
+    started_at: date | None = None
+    ended_at: date | None = None
     ad_title: str
-    ad_ended_at: datetime
+    ad_ended_at: date
     is_public: bool
     category: str | None = None
 
@@ -31,26 +31,30 @@ class MeetupSchema(BaseSchema):
     description: str
     place: str
     place_description: str
-    started_at: datetime | None = None
-    ended_at: datetime | None = None
+    started_at: date | None = None
+    ended_at: date | None = None
     ad_title: str
-    ad_ended_at: datetime
+    ad_ended_at: date
     is_public: bool
     image: str | None = None
     category: str | None = None
     like_count: int
+    is_like: bool | None = False
 
 
 class MeetupListSchema(BaseSchema):
     id: int
     is_organizer: bool | None = False
     organizer: OrganizerSchema
-    started_at: datetime | None = None
-    ended_at: datetime | None = None
-    ad_ended_at: datetime | None = None
+    started_at: date | None = None
+    ended_at: date | None = None
+    ad_ended_at: date | None = None
+    ad_title: str
+    place: str
     is_public: bool
     image: str | None = ""
     like_count: int
+    is_like: bool
 
 
 class MeetupListResultSchema(BaseSchema):
