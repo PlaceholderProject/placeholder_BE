@@ -29,7 +29,7 @@ def get_user(request):
 def update_user(request, payload: UserUpdateSchema, image: UploadedFile = File(None)):
     user = request.auth
 
-    for attr, value in payload.dict().items():
+    for attr, value in payload.model_dump(by_alias=False).items():
         setattr(user, attr, value)
 
     if image:

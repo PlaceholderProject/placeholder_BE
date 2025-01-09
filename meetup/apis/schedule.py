@@ -91,7 +91,7 @@ def update_schedule(request, schedule_id, payload: ScheduleCreateSchema):
     schedule = Schedule.objects.filter(id=schedule_id).order_by("-scheduled_at").first()
     if not schedule:
         return 404, {"message": "존재 하지 않은 스케쥴 입니다."}
-    for attr, value in payload.dict().items():
+    for attr, value in payload.model_dump(by_alias=False).items():
         setattr(schedule, attr, value)
     schedule.save()
     return 200, schedule

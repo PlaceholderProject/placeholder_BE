@@ -70,7 +70,7 @@ def update_meetup(request, meetup_id: int, payload: MeetupCreateSchema, image: U
         return 404, {"message": "존재 하지 않은 모임 입니다."}
     if meetup.organizer != user:
         raise UnauthorizedAccessException()
-    for attr, value in payload.dict().items():
+    for attr, value in payload.model_dump(by_alias=False).items():
         setattr(meetup, attr, value)
 
     if image:
