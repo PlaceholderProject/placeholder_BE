@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from ninja import File, Router
+from ninja import File, Form, Router
 from ninja.files import UploadedFile
 
 from placeholder.utils.auth import JWTAuth
@@ -26,10 +26,10 @@ def get_user(request):
 
 @user_router.put("/me", response={200: UserSchema}, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
-def update_user(request, payload: UserUpdateSchema, image: UploadedFile = File(None)):
+def update_user(request, item: Form[UserUpdateSchema], image: UploadedFile = File(None)):
     user = request.auth
 
-    for attr, value in payload.model_dump(by_alias=False).items():
+    for attr, value in item.model_dump(by_alias=False).items():
         setattr(user, attr, value)
 
     if image:
