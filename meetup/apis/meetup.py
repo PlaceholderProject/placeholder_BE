@@ -98,8 +98,8 @@ def like_meetup(request, meetup_id: int):
     user = request.auth
     like, is_create = MeetupLike.objects.get_or_create(user=user, meetup_id=meetup_id)
     if is_create:
-        Meetup.objects.update(like_count=F("like_count") + 1)
+        Meetup.objects.filter(id=meetup_id).update(like_count=F("like_count") + 1)
         return 200, None
     like.delete()
-    Meetup.objects.update(like_count=F("like_count") - 1)
-    return 200, None
+    Meetup.objects.filter(id=meetup_id).update(like_count=F("like_count") - 1)
+    return 204, None
