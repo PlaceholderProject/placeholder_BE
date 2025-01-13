@@ -92,7 +92,7 @@ def delete_meetup(request, meetup_id: int):
     return 204, None
 
 
-@meetup_router.post("{meetup_id}/like", response={200: None}, auth=JWTAuth())
+@meetup_router.post("{meetup_id}/like", response={200: None, 204: None}, auth=JWTAuth())
 @handle_exceptions
 def like_meetup(request, meetup_id: int):
     user = request.auth
