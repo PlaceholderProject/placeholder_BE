@@ -28,7 +28,7 @@ def create_meetup(request, payload: MeetupCreateSchema, image: UploadedFile = Fi
     return 201, meetup
 
 
-@meetup_router.get("", response={200: MeetupListResultSchema}, auth=JWTAuth(), by_alias=True)
+@meetup_router.get("", response={200: MeetupListResultSchema}, by_alias=True)
 @handle_exceptions
 def get_meetups(request):
     user = request.auth
@@ -43,7 +43,7 @@ def get_meetups(request):
     return 200, {"result": meetups}
 
 
-@meetup_router.get("{meetup_id}", response={200: MeetupSchema, 404: ErrorSchema}, auth=JWTAuth(), by_alias=True)
+@meetup_router.get("{meetup_id}", response={200: MeetupSchema, 404: ErrorSchema}, by_alias=True)
 @handle_exceptions
 def get_meetup(request, meetup_id: int):
     user = request.auth

@@ -46,7 +46,6 @@ def create_meetup_comment(request, meetup_id, payload: MeetupCommentCreateSchema
 @meetup_router.get(
     "{meetup_id}/comment",
     response={200: CommentListResultSchema, 401: ErrorSchema, 404: ErrorSchema},
-    auth=JWTAuth(),
     by_alias=True,
     tags=["MeetupComment"],
 )
