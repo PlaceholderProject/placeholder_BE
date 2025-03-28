@@ -1,11 +1,21 @@
 # -*- coding: utf-8 -*-
-from ninja import File, Form, Router
+from datetime import datetime
+from typing import Optional
+
+from ninja import File, Form, Query, Router
 from ninja.files import UploadedFile
 
+from meetup.models import Meetup
 from placeholder.utils.auth import JWTAuth
 from placeholder.utils.decorators import handle_exceptions
 from user.models.user import User
-from user.schemas.user import UserCreateSchema, UserSchema, UserUpdateSchema
+from user.schemas.user import (
+    MyAdListSchema,
+    MyMeetupListSchema,
+    UserCreateSchema,
+    UserSchema,
+    UserUpdateSchema,
+)
 
 user_router = Router(tags=["User"])
 
@@ -46,3 +56,35 @@ def delete_user(request):
 
     user.delete()
     return 204, None
+
+
+@user_router.get("/me/meetup", response={200: MyMeetupListSchema}, auth=JWTAuth())
+@handle_exceptions
+def get_my_meetups(request, status: Optional[str] = Query(None, description="모임 상태 (ongoing 또는 ended)")):
+    user = request.auth
+    now = datetime.now()
+
+    if status == "ended":
+        filters = {"ended_at__lt": now}
+    else:
+        filters = {"ended_at__gt": now}
+
+    meetups = (
+        Meetup.objects.prefetch_related("member_set").filter(member__in=user, **filters).order_by("ended_at").all()
+    )
+    return 200, {"result": meetups}
+
+
+@user_router.get("/me/ad", response={200: MyAdListSchema}, auth=JWTAuth())
+@handle_exceptions
+def get_my_ads(request, status: Optional[str] = Query(None, description="광고 상태 (ongoing 또는 ended)")):
+    user = request.auth
+    now = datetime.now()
+
+    if status == "ended":
+        filters = {"ad_ended_at__lt": now}
+    else:
+        filters = {"ad_ended_at__gt": now}
+
+    ads = Meetup.objects.filter(organizer=user, **filters).order_by("ad_ended_at").all()
+    return 200, {"result": ads}

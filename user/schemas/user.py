@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
+from datetime import datetime
+from typing import List
 
 from ninja.orm import create_schema
 from pydantic import Field, field_validator
@@ -51,3 +53,24 @@ UserSchema = create_schema(User, fields=["email", "nickname", "bio", "image"], b
 UserUpdateSchema = create_schema(User, fields=["nickname", "bio"], base_class=BaseSchema)
 
 UserProfileSchema = create_schema(User, fields=["nickname", "image"], base_class=BaseSchema)
+
+
+class MyMeetupSchema(BaseSchema):
+    id: int
+    is_organizer: bool
+    name: str
+    ended_at: datetime
+
+
+class MyAdSchema(BaseSchema):
+    id: int
+    ad_title: str
+    ad_ended_at: datetime
+
+
+class MyMeetupListSchema(BaseSchema):
+    result: List[MyMeetupSchema]
+
+
+class MyAdListSchema(BaseSchema):
+    result: List[MyAdSchema]
