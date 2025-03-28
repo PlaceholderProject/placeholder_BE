@@ -31,7 +31,7 @@ def create_meetup(request, payload: MeetupCreateSchema, image: UploadedFile = Fi
 @meetup_router.get("", response={200: MeetupListResultSchema}, by_alias=True)
 @handle_exceptions
 def get_meetups(request):
-    user = request.auth
+    user = request.auth if hasattr(request, "auth") else None
     meetups = (
         Meetup.objects.select_related("organizer")
         .annotate(
@@ -46,7 +46,7 @@ def get_meetups(request):
 @meetup_router.get("{meetup_id}", response={200: MeetupSchema, 404: ErrorSchema}, by_alias=True)
 @handle_exceptions
 def get_meetup(request, meetup_id: int):
-    user = request.auth
+    user = request.auth if hasattr(request, "auth") else None
     meetup = (
         Meetup.objects.select_related("organizer")
         .annotate(
