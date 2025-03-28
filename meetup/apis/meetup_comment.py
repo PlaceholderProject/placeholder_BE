@@ -29,8 +29,6 @@ def create_meetup_comment(request, meetup_id, payload: MeetupCommentCreateSchema
     meetup = Meetup.objects.filter(id=meetup_id).first()
     if not meetup:
         return 404, {"message": "존재 하지 않은 모임 입니다."}
-    if not Member.objects.filter(user=user, meetup_id=meetup_id).exists():
-        return 401, {"message": "권한이 없습니다."}
     comment = MeetupComment.objects.select_related("user").create(
         user=user, meetup_id=meetup_id, meetup=meetup, **payload.dict(by_alias=False)
     )
