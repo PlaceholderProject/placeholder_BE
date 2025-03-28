@@ -38,9 +38,9 @@ class MeetupSchema(BaseSchema):
     is_public: bool
     image: str | None = None
     category: str | None = None
-    like_count: int
+    like_count: int | None = 0
     is_like: bool | None = False
-    comment_count: int
+    comment_count: int | None = 0
 
 
 class MeetupListSchema(BaseSchema):
