@@ -2,7 +2,7 @@
 from ninja import Router
 
 from meetup.apis.meetup import meetup_router
-from meetup.models import Meetup, MeetupComment, Member
+from meetup.models import Meetup, MeetupComment
 from meetup.schemas.comment import (
     CommentListResultSchema,
     CommentSchema,
@@ -52,11 +52,8 @@ def create_meetup_comment(request, meetup_id, payload: MeetupCommentCreateSchema
 )
 @handle_exceptions
 def get_comments(request, meetup_id):
-    user = request.auth
     if not Meetup.objects.filter(id=meetup_id).exists():
         return 404, {"message": "존재 하지 않은 모임 입니다."}
-    if not Member.objects.filter(user=user, meetup_id=meetup_id).exists():
-        return 401, {"message": "권한이 없습니다."}
     comments = (
         MeetupComment.objects.select_related("user")
         .filter(meetup_id=meetup_id, is_delete=False)
