@@ -59,7 +59,11 @@ def get_comments(request, meetup_id):
         return 404, {"message": "존재 하지 않은 모임 입니다."}
     if not Member.objects.filter(user=user, meetup_id=meetup_id).exists():
         return 401, {"message": "권한이 없습니다."}
-    comments = MeetupComment.objects.select_related("user").filter(is_delete=False).order_by("root", "-created_at")
+    comments = (
+        MeetupComment.objects.select_related("user")
+        .filter(meetup_id=meetup_id, is_delete=False)
+        .order_by("root", "-created_at")
+    )
     return 200, {"result": comments}
 
 
