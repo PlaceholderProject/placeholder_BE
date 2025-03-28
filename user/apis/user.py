@@ -2,6 +2,7 @@
 from datetime import datetime
 from typing import Optional
 
+from django.db.models import BooleanField, Case, When
 from ninja import File, Form, Query, Router
 from ninja.files import UploadedFile
 
@@ -64,13 +65,26 @@ def get_my_meetups(request, status: Optional[str] = Query(None, description="모
     user = request.auth
     now = datetime.now()
 
-    if status == "ended":
+    if status == "ongoing":
+        filters = {"ended_at__gt": now}
+    elif status == "ended":
         filters = {"ended_at__lt": now}
     else:
-        filters = {"ended_at__gt": now}
+        filters = {}
 
     meetups = (
-        Meetup.objects.prefetch_related("member_set").filter(member__in=user, **filters).order_by("ended_at").all()
+        Meetup.objects.prefetch_related("member_set")
+        .filter(member__user=user, **filters)
+        .annotate(
+            is_organizer=Case(When(organizer=user, then=True), default=False, output_field=BooleanField()),
+            is_current=Case(
+                When(ended_at__gt=now, then=True),
+                default=False,
+                output_field=BooleanField(),
+            ),
+        )
+        .order_by("ended_at")
+        .all()
     )
     return 200, {"result": meetups}
 
@@ -81,10 +95,23 @@ def get_my_ads(request, status: Optional[str] = Query(None, description="광고 
     user = request.auth
     now = datetime.now()
 
-    if status == "ended":
+    if status == "ongoing":
+        filters = {"ad_ended_at__gt": now}
+    elif status == "ended":
         filters = {"ad_ended_at__lt": now}
     else:
-        filters = {"ad_ended_at__gt": now}
+        filters = {}
 
-    ads = Meetup.objects.filter(organizer=user, **filters).order_by("ad_ended_at").all()
+    ads = (
+        Meetup.objects.filter(organizer=user, **filters)
+        .annotate(
+            is_current=Case(
+                When(ad_ended_at__gt=now, then=True),
+                default=False,
+                output_field=BooleanField(),
+            )
+        )
+        .order_by("ad_ended_at")
+        .all()
+    )
     return 200, {"result": ads}

@@ -60,12 +60,14 @@ class MyMeetupSchema(BaseSchema):
     is_organizer: bool
     name: str
     ended_at: datetime
+    is_current: bool
 
 
 class MyAdSchema(BaseSchema):
     id: int
     ad_title: str
     ad_ended_at: datetime
+    is_current: bool
 
 
 class MyMeetupListSchema(BaseSchema):
