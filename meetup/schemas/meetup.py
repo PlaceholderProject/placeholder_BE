@@ -40,6 +40,7 @@ class MeetupSchema(BaseSchema):
     category: str | None = None
     like_count: int
     is_like: bool | None = False
+    comment_count: int
 
 
 class MeetupListSchema(BaseSchema):
@@ -55,6 +56,7 @@ class MeetupListSchema(BaseSchema):
     image: str | None = ""
     like_count: int
     is_like: bool
+    comment_count: int
 
 
 class MeetupListResultSchema(BaseSchema):

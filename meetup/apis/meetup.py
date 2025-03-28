@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 from django.db import transaction
-from django.db.models import Exists, F, OuterRef
+from django.db.models import Count, Exists, F, OuterRef, Q
 from ninja import File, Router, UploadedFile
 
-from meetup.models import Meetup, Member
-from meetup.models.meetup import MeetupLike
+from meetup.models import Meetup, MeetupLike, Member
 from meetup.schemas.meetup import (
     MeetupCreateSchema,
     MeetupListResultSchema,
@@ -35,7 +34,10 @@ def get_meetups(request):
     user = request.auth
     meetups = (
         Meetup.objects.select_related("organizer")
-        .annotate(is_like=Exists(MeetupLike.objects.filter(meetup_id=OuterRef("id"), user=user)))
+        .annotate(
+            is_like=Exists(MeetupLike.objects.filter(meetup_id=OuterRef("id"), user=user)),
+            comment_count=Count("meetupcomment", filter=Q(meetupcomment__meetup_id=F("id"))),
+        )
         .all()
     )
     return 200, {"result": meetups}
@@ -47,7 +49,10 @@ def get_meetup(request, meetup_id: int):
     user = request.auth
     meetup = (
         Meetup.objects.select_related("organizer")
-        .annotate(is_like=Exists(MeetupLike.objects.filter(meetup_id=OuterRef("id"), user=user)))
+        .annotate(
+            is_like=Exists(MeetupLike.objects.filter(meetup_id=OuterRef("id"), user=user)),
+            comment_count=Count("meetupcomment", filter=Q(meetupcomment__meetup_id=F("id"))),
+        )
         .filter(id=meetup_id)
         .first()
     )

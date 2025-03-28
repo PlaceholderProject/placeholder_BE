@@ -7,6 +7,7 @@
   // words - list of words to be always considered correct
   "words": [
     "meetup_router",
+    "meetupcomment",
     //python packages
     "pydantic",
     "simplejwt"
