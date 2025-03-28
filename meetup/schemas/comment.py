@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
 from typing import List
 
 from ninja.orm import create_schema
@@ -18,6 +19,7 @@ class CommentSchema(BaseSchema):
     recipient: str | None = None
     user: UserProfileSchema
     text: str
+    created_at: datetime
 
 
 class CommentListResultSchema(BaseSchema):
