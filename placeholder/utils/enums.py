@@ -1,5 +1,5 @@
+# -*- coding: utf-8 -*-
 from enum import Enum
-from abc import ABC
 from types import DynamicClassAttribute
 
 
@@ -67,4 +67,8 @@ class APIStatus(StrEnum):
     def __init__(self, code, message):
         self.code = code
         self.message = message
-        
+
+
+class MeetupStatus(StrEnum):
+    ONGOING = ("ongoing",)
+    ENDED = ("ended",)

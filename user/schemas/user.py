@@ -76,3 +76,15 @@ class MyMeetupListSchema(BaseSchema):
 
 class MyAdListSchema(BaseSchema):
     result: List[MyAdSchema]
+
+
+class MyProposalSchema(BaseSchema):
+    id: int
+    meetup_name: str
+    text: str
+    status: str
+    created_at: datetime
+
+
+class MyProposalListSchema(BaseSchema):
+    result: List[MyProposalSchema]

@@ -2,17 +2,19 @@
 from datetime import datetime
 from typing import Optional
 
-from django.db.models import BooleanField, Case, When
+from django.db.models import BooleanField, Case, F, When
 from ninja import File, Form, Query, Router
 from ninja.files import UploadedFile
 
-from meetup.models import Meetup
+from meetup.models import Meetup, Proposal
 from placeholder.utils.auth import JWTAuth
 from placeholder.utils.decorators import handle_exceptions
+from placeholder.utils.enums import MeetupStatus
 from user.models.user import User
 from user.schemas.user import (
     MyAdListSchema,
     MyMeetupListSchema,
+    MyProposalListSchema,
     UserCreateSchema,
     UserSchema,
     UserUpdateSchema,
@@ -61,16 +63,21 @@ def delete_user(request):
 
 @user_router.get("/me/meetup", response={200: MyMeetupListSchema}, auth=JWTAuth())
 @handle_exceptions
-def get_my_meetups(request, status: Optional[str] = Query(None, description="모임 상태 (ongoing 또는 ended)")):
+def get_my_meetups(
+    request,
+    status: Optional[MeetupStatus] = Query(None, description="모임 상태 (ongoing 또는 ended)"),
+    organizer: Optional[bool] = Query(None, description="모임장 여부"),
+):
     user = request.auth
     now = datetime.now()
 
+    filters = {}
     if status == "ongoing":
-        filters = {"ended_at__gt": now}
+        filters["ended_at__gt"] = now
     elif status == "ended":
-        filters = {"ended_at__lt": now}
-    else:
-        filters = {}
+        filters["ended_at__lt"] = now
+    if organizer is not None and organizer:
+        filters["organizer"] = user
 
     meetups = (
         Meetup.objects.prefetch_related("member_set")
@@ -86,6 +93,9 @@ def get_my_meetups(request, status: Optional[str] = Query(None, description="모
         .order_by("ended_at")
         .all()
     )
+
+    if organizer is not None and not organizer:
+        meetups = meetups.exclude(organizer=user)
     return 200, {"result": meetups}
 
 
@@ -115,3 +125,15 @@ def get_my_ads(request, status: Optional[str] = Query(None, description="광고 
         .all()
     )
     return 200, {"result": ads}
+
+
+@user_router.get("/me/proposal", response={200: MyProposalListSchema}, auth=JWTAuth())
+@handle_exceptions
+def get_my_proposals(request):
+    user = request.auth
+
+    proposals = (
+        Proposal.objects.select_related("meetup").filter(user=user).annotate(meetup_name=F("meetup__name")).all()
+    )
+
+    return 200, {"result": proposals}
