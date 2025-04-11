@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import date
+from datetime import date, datetime
 from typing import List
 
 from placeholder.schemas.base import BaseSchema
@@ -57,6 +57,7 @@ class MeetupListSchema(BaseSchema):
     like_count: int
     is_like: bool
     comment_count: int
+    created_at: datetime
 
 
 class MeetupListResultSchema(BaseSchema):
