@@ -6,6 +6,7 @@ from ninja import File, Router, UploadedFile
 from meetup.models import Meetup, MeetupLike, Member
 from meetup.schemas.meetup import (
     MeetupCreateSchema,
+    MeetupLikeSchema,
     MeetupListResultSchema,
     MeetupSchema,
 )
@@ -108,3 +109,18 @@ def like_meetup(request, meetup_id: int):
     like.delete()
     Meetup.objects.filter(id=meetup_id).update(like_count=F("like_count") - 1)
     return 204, None
+
+
+@meetup_router.get("{meetup_id}/like", response={200: MeetupLikeSchema}, auth=JWTAuth(), by_alias=True)
+@handle_exceptions
+def get_meetup_like(request, meetup_id: int):
+    user = request.auth
+
+    meetup = (
+        Meetup.objects.filter(id=meetup_id)
+        .annotate(is_like=Exists(MeetupLike.objects.filter(user=user, meetup_id=meetup_id)))
+        .first()
+    )
+    print(meetup.like_count)
+
+    return 200, meetup

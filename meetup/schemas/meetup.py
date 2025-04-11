@@ -61,3 +61,8 @@ class MeetupListSchema(BaseSchema):
 
 class MeetupListResultSchema(BaseSchema):
     result: List[MeetupListSchema]
+
+
+class MeetupLikeSchema(BaseSchema):
+    is_like: bool
+    like_count: int
