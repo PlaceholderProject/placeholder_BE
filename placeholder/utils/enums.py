@@ -72,3 +72,9 @@ class APIStatus(StrEnum):
 class MeetupStatus(StrEnum):
     ONGOING = ("ongoing",)
     ENDED = ("ended",)
+
+
+class MeetupSort(StrEnum):
+    LIKE = ("like",)
+    LATEST = ("latest",)
+    DEADLINE = ("deadline",)

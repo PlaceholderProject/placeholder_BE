@@ -49,6 +49,7 @@ class MeetupListSchema(BaseSchema):
     organizer: OrganizerSchema
     started_at: date | None = None
     ended_at: date | None = None
+    meetup: str | None = ""
     ad_ended_at: date | None = None
     ad_title: str
     place: str

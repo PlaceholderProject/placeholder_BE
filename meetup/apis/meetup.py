@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
+from typing import Optional
+from urllib.parse import unquote
+
 from django.db import transaction
 from django.db.models import Count, Exists, F, OuterRef, Q
-from ninja import File, Router, UploadedFile
+from ninja import File, Query, Router, UploadedFile
 
 from meetup.models import Meetup, MeetupLike, Member
 from meetup.schemas.meetup import (
@@ -13,6 +17,7 @@ from meetup.schemas.meetup import (
 from placeholder.schemas.base import ErrorSchema
 from placeholder.utils.auth import JWTAuth
 from placeholder.utils.decorators import handle_exceptions
+from placeholder.utils.enums import MeetupSort
 from placeholder.utils.exceptions import UnauthorizedAccessException
 
 meetup_router = Router(tags=["Meetup"])
@@ -31,16 +36,47 @@ def create_meetup(request, payload: MeetupCreateSchema, image: UploadedFile = Fi
 
 @meetup_router.get("", response={200: MeetupListResultSchema}, by_alias=True)
 @handle_exceptions
-def get_meetups(request):
+def get_meetups(
+    request,
+    category: Optional[str] = Query(None, description="카테고리"),
+    place: Optional[str] = Query(None, description="지역"),
+    organizer: Optional[str] = Query(None, description="작성자"),
+    ad_title: Optional[str] = Query(None, description="광고 타이틀"),
+    description: Optional[str] = Query(None, description="내용"),
+    sort: Optional[MeetupSort] = Query(None, description="정렬"),
+):
     user = request.auth if hasattr(request, "auth") else None
+
+    filters = {}
+    if category:
+        filters["category"] = category
+    if place:
+        filters["place"] = place
+    if organizer:
+        filters["organizer__nickname__icontains"] = unquote(organizer)
+    if ad_title:
+        filters["ad_title__icontains"] = unquote(ad_title)
+    if description:
+        filters["description__icontains"] = unquote(description)
+
     meetups = (
         Meetup.objects.select_related("organizer")
         .annotate(
             is_like=Exists(MeetupLike.objects.filter(meetup_id=OuterRef("id"), user=user)),
             comment_count=Count("meetupcomment", filter=Q(meetupcomment__meetup_id=F("id"))),
         )
+        .filter(**filters)
         .all()
     )
+    if sort and sort in ["like", "latest", "deadline"]:
+        if sort == "like":
+            meetups.order_by("like_count")
+        elif sort == "latest":
+            meetups.order_by("-created_at")
+        elif sort == "deadline":
+            now = datetime.now()
+            meetups.filter(ad_ended_at__lte=now).order_by("-ad_ended_at")
+
     return 200, {"result": meetups}
 
 
