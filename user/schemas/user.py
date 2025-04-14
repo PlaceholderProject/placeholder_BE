@@ -52,7 +52,7 @@ UserSchema = create_schema(User, fields=["email", "nickname", "bio", "image"], b
 
 UserUpdateSchema = create_schema(User, fields=["nickname", "bio"], base_class=BaseSchema)
 
-UserProfileSchema = create_schema(User, fields=["nickname", "image"], base_class=BaseSchema)
+UserProfileSchema = create_schema(User, fields=["id", "nickname", "image"], base_class=BaseSchema)
 
 
 class MyMeetupSchema(BaseSchema):
