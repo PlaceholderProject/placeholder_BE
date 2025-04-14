@@ -16,6 +16,7 @@ ScheduleCommentCreateSchema = create_schema(ScheduleComment, fields=["text"], ba
 
 class CommentSchema(BaseSchema):
     id: int
+    root: int | None = None
     recipient: str | None = None
     user: UserProfileSchema
     text: str
