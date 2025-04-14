@@ -23,5 +23,13 @@ class CommentSchema(BaseSchema):
     created_at: datetime
 
 
+class MeetupCommentSchema(CommentSchema):
+    is_organizer: bool
+
+
 class CommentListResultSchema(BaseSchema):
     result: List[CommentSchema]
+
+
+class MeetupCommentListSchema(BaseSchema):
+    result: List[MeetupCommentSchema]

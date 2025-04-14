@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
+from django.db.models import BooleanField, Case, F, When
 from ninja import Router
 
 from meetup.apis.meetup import meetup_router
 from meetup.models import Meetup, MeetupComment
 from meetup.schemas.comment import (
-    CommentListResultSchema,
     CommentSchema,
     MeetupCommentCreateSchema,
+    MeetupCommentListSchema,
 )
 from notification.models import Notification
 from placeholder.schemas.base import ErrorSchema
@@ -45,7 +46,7 @@ def create_meetup_comment(request, meetup_id, payload: MeetupCommentCreateSchema
 
 @meetup_router.get(
     "{meetup_id}/comment",
-    response={200: CommentListResultSchema, 401: ErrorSchema, 404: ErrorSchema},
+    response={200: MeetupCommentListSchema, 401: ErrorSchema, 404: ErrorSchema},
     by_alias=True,
     tags=["MeetupComment"],
 )
@@ -54,8 +55,13 @@ def get_comments(request, meetup_id):
     if not Meetup.objects.filter(id=meetup_id).exists():
         return 404, {"message": "존재 하지 않은 모임 입니다."}
     comments = (
-        MeetupComment.objects.select_related("user")
+        MeetupComment.objects.select_related("user", "meetup")
         .filter(meetup_id=meetup_id, is_delete=False)
+        .annotate(
+            is_organizer=Case(
+                When(meetup__organizer=F("user"), then=True), default=False, output_field=BooleanField()
+            ),
+        )
         .order_by("root", "-created_at")
     )
     return 200, {"result": comments}
