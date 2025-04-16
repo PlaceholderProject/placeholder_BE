@@ -66,7 +66,10 @@ def get_meetups(
         Meetup.objects.select_related("organizer")
         .annotate(
             is_like=Exists(MeetupLike.objects.filter(meetup_id=OuterRef("id"), user=user)),
-            comment_count=Count("meetupcomment", filter=Q(meetupcomment__meetup_id=F("id"))),
+            comment_count=Count(
+                "meetupcomment",
+                filter=Q(meetupcomment__meetup_id=F("id"), meetupcomment__is_delete=False),
+            ),
         )
         .filter(**filters)
         .all()
