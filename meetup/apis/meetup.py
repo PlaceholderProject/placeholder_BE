@@ -70,12 +70,12 @@ def get_meetups(
     )
     if sort and sort in ["like", "latest", "deadline"]:
         if sort == "like":
-            meetups.order_by("like_count")
+            meetups = meetups.order_by("-like_count")
         elif sort == "latest":
-            meetups.order_by("-created_at")
+            meetups = meetups.order_by("-created_at")
         elif sort == "deadline":
             now = datetime.now()
-            meetups.filter(ad_ended_at__lte=now).order_by("-ad_ended_at")
+            meetups = meetups.filter(ad_ended_at__lte=now).order_by("-ad_ended_at")
 
     return 200, {"result": meetups}
 
