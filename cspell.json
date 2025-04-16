@@ -8,6 +8,7 @@
   "words": [
     "meetup_router",
     "meetupcomment",
+    "doseq",
     //python packages
     "pydantic",
     "simplejwt"

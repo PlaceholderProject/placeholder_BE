@@ -1,19 +1,21 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 from urllib.parse import unquote
 
 from django.db import transaction
 from django.db.models import Count, Exists, F, OuterRef, Q
 from ninja import File, Query, Router, UploadedFile
+from ninja.pagination import paginate
 
 from meetup.models import Meetup, MeetupLike, Member
 from meetup.schemas.meetup import (
     MeetupCreateSchema,
     MeetupLikeSchema,
-    MeetupListResultSchema,
+    MeetupListSchema,
     MeetupSchema,
 )
+from placeholder.pagination import CustomPagination
 from placeholder.schemas.base import ErrorSchema
 from placeholder.utils.auth import JWTAuth
 from placeholder.utils.decorators import handle_exceptions
@@ -34,8 +36,9 @@ def create_meetup(request, payload: MeetupCreateSchema, image: UploadedFile = Fi
     return 201, meetup
 
 
-@meetup_router.get("", response={200: MeetupListResultSchema}, by_alias=True)
+@meetup_router.get("", response=List[MeetupListSchema], by_alias=True)
 @handle_exceptions
+@paginate(CustomPagination)
 def get_meetups(
     request,
     category: Optional[str] = Query(None, description="카테고리"),
@@ -77,7 +80,7 @@ def get_meetups(
             now = datetime.now()
             meetups = meetups.filter(ad_ended_at__lte=now).order_by("-ad_ended_at")
 
-    return 200, {"result": meetups}
+    return meetups
 
 
 @meetup_router.get("{meetup_id}", response={200: MeetupSchema, 404: ErrorSchema}, by_alias=True)

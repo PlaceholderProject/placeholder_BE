@@ -62,6 +62,9 @@ class MeetupListSchema(BaseSchema):
 
 
 class MeetupListResultSchema(BaseSchema):
+    # previous: str
+    # next: str
+    total: int
     result: List[MeetupListSchema]
 
 

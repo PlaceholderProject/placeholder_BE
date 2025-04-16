@@ -1,20 +1,23 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from django.db.models import BooleanField, Case, F, When
 from ninja import File, Form, Query, Router
 from ninja.files import UploadedFile
+from ninja.pagination import paginate
 
 from meetup.models import Meetup, Proposal
+from meetup.schemas.proposal import ProposalListSchema
+from placeholder.pagination import CustomPagination
 from placeholder.utils.auth import JWTAuth
 from placeholder.utils.decorators import handle_exceptions
 from placeholder.utils.enums import MeetupStatus
 from user.models.user import User
 from user.schemas.user import (
-    MyAdListSchema,
-    MyMeetupListSchema,
-    MyProposalListSchema,
+    MyAdSchema,
+    MyMeetupSchema,
+    MyProposalSchema,
     UserCreateSchema,
     UserSchema,
     UserUpdateSchema,
@@ -61,8 +64,9 @@ def delete_user(request):
     return 204, None
 
 
-@user_router.get("/me/meetup", response={200: MyMeetupListSchema}, auth=JWTAuth())
+@user_router.get("/me/meetup", response=List[MyMeetupSchema], auth=JWTAuth())
 @handle_exceptions
+@paginate(CustomPagination)
 def get_my_meetups(
     request,
     status: Optional[MeetupStatus] = Query(None, description="모임 상태 (ongoing 또는 ended)"),
@@ -96,11 +100,12 @@ def get_my_meetups(
 
     if organizer is not None and not organizer:
         meetups = meetups.exclude(organizer=user)
-    return 200, {"result": meetups}
+    return meetups
 
 
-@user_router.get("/me/ad", response={200: MyAdListSchema}, auth=JWTAuth())
+@user_router.get("/me/ad", response=List[MyAdSchema], auth=JWTAuth())
 @handle_exceptions
+@paginate(CustomPagination)
 def get_my_ads(request, status: Optional[str] = Query(None, description="광고 상태 (ongoing 또는 ended)")):
     user = request.auth
     now = datetime.now()
@@ -124,11 +129,12 @@ def get_my_ads(request, status: Optional[str] = Query(None, description="광고 
         .order_by("ad_ended_at")
         .all()
     )
-    return 200, {"result": ads}
+    return ads
 
 
-@user_router.get("/me/proposal", response={200: MyProposalListSchema}, auth=JWTAuth())
+@user_router.get("/me/proposal", response=List[MyProposalSchema], auth=JWTAuth())
 @handle_exceptions
+@paginate(CustomPagination)
 def get_my_proposals(request):
     user = request.auth
 
@@ -136,4 +142,23 @@ def get_my_proposals(request):
         Proposal.objects.select_related("meetup").filter(user=user).annotate(meetup_name=F("meetup__name")).all()
     )
 
-    return 200, {"result": proposals}
+    return proposals
+
+
+@user_router.get(
+    "me/proposal/received",
+    response=List[ProposalListSchema],
+    auth=JWTAuth(),
+    by_alias=True,
+)
+@handle_exceptions
+@paginate(CustomPagination)
+def get_received_proposals(request):
+    user = request.auth
+    meetups = Meetup.objects.filter(organizer=user).all()
+    if not meetups:
+        return 404, {"message": "존재 하지 않은 모임입니다."}
+
+    proposals = Proposal.objects.prefetch_related("user").filter(meetup_id__in=meetups).exclude(user=user).all()
+
+    return proposals
