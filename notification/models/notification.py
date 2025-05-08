@@ -28,7 +28,7 @@ class Notification(BaseModel):
 
     def _generate_url(self):
         if self.type == "meetup_comment":
-            return f"/meetup/{self.model_id}/"
+            return f"/ad/{self.model_id}/"
         elif self.type == "schedule_comment":
             return f"/schedule/{self.model_id}/"
         elif self.type in ["sent_proposal", "received_proposal"]:

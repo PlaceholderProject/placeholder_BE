@@ -169,3 +169,20 @@ def ignore_proposal(request, proposal_id):
     proposal.status = Proposal.ProposalStatus.IGNORE.value
     proposal.save()
     return 200, proposal
+
+
+@proposal_router.post(
+    "{proposal_id}/hide",
+    response={204: None, 404: ErrorSchema},
+    auth=JWTAuth(),
+    by_alias=True,
+)
+@handle_exceptions
+def hide_proposal(request, proposal_id):
+    user = request.auth
+    proposal = Proposal.objects.select_related("meetup").filter(id=proposal_id, user=user).first()
+    if not proposal:
+        return 404, {"message": "존재 하지 않은 신청 입니다."}
+    proposal.is_hide_proposer = True
+    proposal.save()
+    return 204, None
