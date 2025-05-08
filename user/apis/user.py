@@ -139,7 +139,10 @@ def get_my_proposals(request):
     user = request.auth
 
     proposals = (
-        Proposal.objects.select_related("meetup").filter(user=user).annotate(meetup_name=F("meetup__name")).all()
+        Proposal.objects.select_related("meetup")
+        .filter(user=user, is_hide_to_proposer=False)
+        .annotate(meetup_name=F("meetup__name"), meetup_ad_title=F("meetup__ad_title"))
+        .all()
     )
 
     return proposals

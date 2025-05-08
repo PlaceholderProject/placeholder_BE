@@ -81,6 +81,7 @@ class MyAdListSchema(BaseSchema):
 class MyProposalSchema(BaseSchema):
     id: int
     meetup_name: str
+    meetup_ad_title: str
     text: str
     status: str
     created_at: datetime

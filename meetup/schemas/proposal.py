@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
 from typing import List
 
 from ninja.orm import create_schema
@@ -13,14 +14,15 @@ class ProposalListSchema(BaseSchema):
     id: int
     user: UserProfileSchema
     text: str
-    status: str
+    status: str | None = "PENDING"
+    created_at: datetime
 
 
 class ProposalCreateSchema(BaseSchema):
     text: str = Field(min_length=0, max_length=40)
 
 
-ProposalSchema = create_schema(Proposal, fields=["id", "user", "meetup", "text", "status"])
+ProposalSchema = create_schema(Proposal, fields=["id", "user", "meetup", "text", "status", "created_at"])
 
 
 class ProposalListResultSchema(BaseSchema):

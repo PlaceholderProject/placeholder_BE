@@ -63,6 +63,8 @@ def post_proposal(request, meetup_id, payload: ProposalCreateSchema):
     meetup = Meetup.objects.select_related("organizer").filter(id=meetup_id).first()
     if not meetup:
         return 404, {"message": "존재 하지 않은 모임입니다."}
+    if Proposal.objects.filter(user=user, meetup=meetup).exists():
+        return 404, {"message": "이미 신청한 모임입니다."}
     proposal = Proposal.objects.create(user=user, meetup=meetup, text=payload.text)
 
     Notification.objects.create(
@@ -81,15 +83,13 @@ def post_proposal(request, meetup_id, payload: ProposalCreateSchema):
 )
 @handle_exceptions
 def delete_proposal(request, proposal_id):
+    user = request.auth
     proposal = Proposal.objects.select_related("meetup").filter(id=proposal_id).first()
     if not proposal:
         return 404, {"message": "존재 하지 않은 신청 입니다."}
-    if not request.auth == proposal.meetup.organizer:
+    if user != proposal.meetup.organizer or user != proposal.user:
         return 401, {"message": "권한이 없습니다."}
 
-    proposal = Proposal.objects.filter(id=proposal_id).first()
-    if not proposal:
-        return 404, {"message": "존재 하지 않은 신청 입니다."}
     proposal.delete()
     return 204, None
 
@@ -104,9 +104,9 @@ def delete_proposal(request, proposal_id):
 def accept_proposal(request, proposal_id):
     user = request.auth
     proposal = Proposal.objects.select_related("meetup").filter(id=proposal_id).first()
-    meetup = proposal.meetup
     if not proposal:
         return 404, {"message": "존재 하지 않은 신청 입니다."}
+    meetup = proposal.meetup
     if not request.auth == meetup.organizer:
         return 401, {"message": "권한이 없습니다."}
     proposal.status = Proposal.ProposalStatus.ACCEPTANCE.value

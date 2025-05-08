@@ -31,5 +31,5 @@ class Notification(BaseModel):
             return f"/meetup/{self.model_id}/"
         elif self.type == "schedule_comment":
             return f"/schedule/{self.model_id}/"
-        elif self.sender_type in ["sent_proposal", "received_proposal"]:
+        elif self.type in ["sent_proposal", "received_proposal"]:
             return f"/proposal/{self.model_id}/"
