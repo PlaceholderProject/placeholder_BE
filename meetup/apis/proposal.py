@@ -183,6 +183,6 @@ def hide_proposal(request, proposal_id):
     proposal = Proposal.objects.select_related("meetup").filter(id=proposal_id, user=user).first()
     if not proposal:
         return 404, {"message": "존재 하지 않은 신청 입니다."}
-    proposal.is_hide_proposer = True
+    proposal.is_hide_to_proposer = True
     proposal.save()
     return 204, None
