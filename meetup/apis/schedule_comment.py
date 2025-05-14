@@ -42,10 +42,11 @@ def create_schedule_comment(request, schedule_id, payload: ScheduleCommentCreate
             recipient=member.organizer,
             message=f"{schedule.memo}에서 {user.nickname}님이 댓글을 달았습니다.",
         )
-        for member in schedule.participant
+        for member in schedule.participant.all()
         if not member == user
     ]
-    Notification.objects.bulk_create(notifications)
+    if notifications:
+        Notification.objects.bulk_create(notifications)
 
     return 201, comment
 

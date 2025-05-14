@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import transaction
+from django.db.models import Count, Q
 from ninja import File, Router, UploadedFile
 
 from meetup.apis.meetup import meetup_router
@@ -27,7 +28,16 @@ def get_schedules(request, meetup_id):
     if not Member.objects.filter(meetup_id=meetup_id, user=request.auth).exists():
         return 401, {"message": "권한이 없습니다."}
     schedules = (
-        Schedule.objects.prefetch_related("participant").filter(meetup_id=meetup_id).order_by("scheduled_at").all()
+        Schedule.objects.prefetch_related("participant")
+        .filter(meetup_id=meetup_id)
+        .annotate(
+            comment_count=Count(
+                "schedulecomment",
+                filter=Q(schedulecomment__is_delete=False),
+            ),
+        )
+        .order_by("scheduled_at")
+        .all()
     )
     result = [
         ScheduleSchema(
@@ -41,6 +51,7 @@ def get_schedules(request, meetup_id):
             longitude=schedule.longitude,
             memo=schedule.memo,
             image=schedule.image,
+            comment_count=schedule.comment_count,
         )
         for schedule in schedules
     ]
@@ -75,7 +86,17 @@ def create_schedule(request, meetup_id, payload: ScheduleCreateSchema, image: Up
 def get_schedule(request, schedule_id):
     if not Member.objects.filter(meetup__schedule__id=schedule_id, user=request.auth).exists():
         return 401, {"message": "권한이 없습니다."}
-    schedule = Schedule.objects.filter(id=schedule_id).order_by("-scheduled_at").first()
+    schedule = (
+        Schedule.objects.filter(id=schedule_id)
+        .order_by("-scheduled_at")
+        .annotate(
+            comment_count=Count(
+                "schedulecomment",
+                filter=Q(schedulecomment__is_delete=False),
+            ),
+        )
+        .first()
+    )
     if not schedule:
         return 404, {"message": "존재 하지 않은 스케쥴 입니다."}
     return 200, schedule
@@ -88,7 +109,16 @@ def get_schedule(request, schedule_id):
 def update_schedule(request, schedule_id, payload: ScheduleCreateSchema):
     if not Member.objects.filter(meetup__schedule__id=schedule_id, user=request.auth).exists():
         return 401, {"message": "권한이 없습니다."}
-    schedule = Schedule.objects.filter(id=schedule_id).first()
+    schedule = (
+        Schedule.objects.filter(id=schedule_id)
+        .annotate(
+            comment_count=Count(
+                "schedulecomment",
+                filter=Q(schedulecomment__is_delete=False),
+            ),
+        )
+        .first()
+    )
     if not schedule:
         return 404, {"message": "존재 하지 않은 스케쥴 입니다."}
     for attr, value in payload.model_dump(by_alias=False).items():

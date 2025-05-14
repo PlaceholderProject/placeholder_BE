@@ -9,6 +9,7 @@
     "meetup_router",
     "meetupcomment",
     "doseq",
+    "schedulecomment",
     //python packages
     "pydantic",
     "simplejwt"

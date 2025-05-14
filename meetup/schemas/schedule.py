@@ -1,9 +1,12 @@
+# -*- coding: utf-8 -*-
+from datetime import datetime
+from typing import List
+
+from ninja.orm import create_schema
+
 from meetup.models import Schedule
 from placeholder.schemas.base import BaseSchema
-from ninja.orm import create_schema
-from typing import List
 from user.schemas.user import UserProfileSchema
-from datetime import datetime
 
 
 class ScheduleSchema(BaseSchema):
@@ -17,10 +20,9 @@ class ScheduleSchema(BaseSchema):
     longitude: str
     memo: str
     image: str | None = None
+    comment_count: int | None = 0
 
 
 ScheduleCreateSchema = create_schema(
-    Schedule,
-    exclude=["id", "created_at", "updated_at", "image", "meetup", "participant"],
-    base_class=BaseSchema
+    Schedule, exclude=["id", "created_at", "updated_at", "image", "meetup", "participant"], base_class=BaseSchema
 )
