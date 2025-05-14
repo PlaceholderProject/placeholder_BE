@@ -39,15 +39,16 @@ def get_proposals(request, meetup_id):
 
 @meetup_router.get(
     "{meetup_id}/proposal/status",
-    response={200: ProposalListSchema},
+    response={200: ProposalListSchema, 204: None},
     auth=JWTAuth(),
 )
 @handle_exceptions
 def get_proposal_status(request, meetup_id):
     user = request.auth
     proposal = Proposal.objects.filter(meetup_id=meetup_id, user=user).first()
-
-    return 200, proposal
+    if proposal:
+        return 200, proposal
+    return 204, None
 
 
 @meetup_router.post(
