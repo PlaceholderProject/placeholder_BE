@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from django.db.models import F
 from ninja import Router
 
 from notification.models import Notification
@@ -25,7 +24,7 @@ def get_notifications(request):
 @handle_exceptions
 def read_notification(request, notification_id):
     user = request.auth
-    result = Notification.objects.filter(id=notification_id, recipient=user).update(is_public=~F("is_public"))
+    result = Notification.objects.filter(id=notification_id, recipient=user).update(is_read=True)
     if not result:
         return 404, {"message": "존재하지 않은 알림 입니다."}
-    return 204
+    return 204, None
