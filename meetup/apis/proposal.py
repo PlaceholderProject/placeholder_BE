@@ -88,11 +88,10 @@ def delete_proposal(request, proposal_id):
     proposal = Proposal.objects.select_related("meetup").filter(id=proposal_id).first()
     if not proposal:
         return 404, {"message": "존재 하지 않은 신청 입니다."}
-    if user != proposal.meetup.organizer or user != proposal.user:
-        return 401, {"message": "권한이 없습니다."}
-
-    proposal.delete()
-    return 204, None
+    if user == proposal.meetup.organizer or user == proposal.user:
+        proposal.delete()
+        return 204, None
+    return 401, {"message": "권한이 없습니다."}
 
 
 @proposal_router.post(
