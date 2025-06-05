@@ -7,7 +7,7 @@ from placeholder.schemas.base import BaseSchema
 
 class OrganizerSchema(BaseSchema):
     nickname: str
-    profile_image: str | None = None
+    image: str | None = None
 
 
 class MeetupCreateSchema(BaseSchema):
@@ -62,8 +62,6 @@ class MeetupListSchema(BaseSchema):
 
 
 class MeetupListResultSchema(BaseSchema):
-    # previous: str
-    # next: str
     total: int
     result: List[MeetupListSchema]
 

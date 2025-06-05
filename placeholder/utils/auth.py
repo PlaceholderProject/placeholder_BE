@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
+from django.contrib.auth.models import AnonymousUser
 from ninja.security import HttpBearer
 from rest_framework_simplejwt.authentication import JWTAuthentication
+
 from placeholder.utils.exceptions import (
     InvalidTokenException,
     UnauthorizedAccessException,
@@ -17,9 +20,13 @@ class JWTAuth(HttpBearer):
             raise InvalidTokenException()
 
     def get_token(self, request):
-        auth = request.headers.get('Authorization')
+        auth = request.headers.get("Authorization")
         if auth:
-            scheme, token = auth.split(' ')
-            if scheme.lower() != 'bearer':
+            scheme, token = auth.split(" ")
+            if scheme.lower() != "bearer":
                 return token
         raise UnauthorizedAccessException()
+
+
+def anonymous_user(request):
+    return AnonymousUser()

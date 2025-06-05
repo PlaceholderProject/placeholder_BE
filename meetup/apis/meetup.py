@@ -4,7 +4,7 @@ from typing import List, Optional
 from urllib.parse import unquote
 
 from django.db import transaction
-from django.db.models import Count, Exists, F, OuterRef, Q
+from django.db.models import BooleanField, Count, Exists, F, OuterRef, Q, Value
 from ninja import File, Query, Router, UploadedFile
 from ninja.pagination import paginate
 
@@ -17,7 +17,7 @@ from meetup.schemas.meetup import (
 )
 from placeholder.pagination import CustomPagination
 from placeholder.schemas.base import ErrorSchema
-from placeholder.utils.auth import JWTAuth
+from placeholder.utils.auth import JWTAuth, anonymous_user
 from placeholder.utils.decorators import handle_exceptions
 from placeholder.utils.enums import MeetupSort
 from placeholder.utils.exceptions import UnauthorizedAccessException
@@ -36,7 +36,7 @@ def create_meetup(request, payload: MeetupCreateSchema, image: UploadedFile = Fi
     return 201, meetup
 
 
-@meetup_router.get("", response=List[MeetupListSchema], by_alias=True)
+@meetup_router.get("", response=List[MeetupListSchema], auth=[JWTAuth(), anonymous_user], by_alias=True)
 @handle_exceptions
 @paginate(CustomPagination)
 def get_meetups(
@@ -48,7 +48,12 @@ def get_meetups(
     description: Optional[str] = Query(None, description="내용"),
     sort: Optional[MeetupSort] = Query(None, description="정렬"),
 ):
-    user = request.auth if hasattr(request, "auth") else None
+    user = request.auth
+
+    if user.is_authenticated:
+        is_like_annotation = Exists(MeetupLike.objects.filter(meetup_id=OuterRef("id"), user=user))
+    else:
+        is_like_annotation = Value(False, output_field=BooleanField())
 
     filters = {}
     if category:
@@ -65,7 +70,7 @@ def get_meetups(
     meetups = (
         Meetup.objects.select_related("organizer")
         .annotate(
-            is_like=Exists(MeetupLike.objects.filter(meetup_id=OuterRef("id"), user=user)),
+            is_like=is_like_annotation,
             comment_count=Count(
                 "meetupcomment",
                 filter=Q(meetupcomment__is_delete=False),
@@ -86,21 +91,31 @@ def get_meetups(
     return meetups
 
 
-@meetup_router.get("{meetup_id}", response={200: MeetupSchema, 404: ErrorSchema}, by_alias=True)
+@meetup_router.get(
+    "{meetup_id}", response={200: MeetupSchema, 404: ErrorSchema}, auth=[JWTAuth(), anonymous_user], by_alias=True
+)
 @handle_exceptions
 def get_meetup(request, meetup_id: int):
-    user = request.auth if hasattr(request, "auth") else None
+    user = request.auth
+
+    if user.is_authenticated:
+        is_like_annotation = Exists(MeetupLike.objects.filter(meetup_id=OuterRef("id"), user=user))
+    else:
+        is_like_annotation = Value(False, output_field=BooleanField())
+
+    now = datetime.now()
     meetup = (
         Meetup.objects.select_related("organizer")
         .annotate(
-            is_like=Exists(MeetupLike.objects.filter(meetup_id=OuterRef("id"), user=user)),
+            is_like=is_like_annotation,
             comment_count=Count("meetupcomment", filter=Q(meetupcomment__is_delete=False)),
         )
-        .filter(id=meetup_id)
+        .filter(id=meetup_id, ad_ended_at__gte=now)
         .first()
     )
     if not meetup:
         return 404, {"message": "존재 하지 않은 모임 입니다."}
+
     return 200, meetup
 
 
@@ -153,16 +168,18 @@ def like_meetup(request, meetup_id: int):
     return 204, None
 
 
-@meetup_router.get("{meetup_id}/like", response={200: MeetupLikeSchema}, auth=JWTAuth(), by_alias=True)
+@meetup_router.get(
+    "{meetup_id}/like", response={200: MeetupLikeSchema}, auth=[JWTAuth(), anonymous_user], by_alias=True
+)
 @handle_exceptions
 def get_meetup_like(request, meetup_id: int):
     user = request.auth
 
-    meetup = (
-        Meetup.objects.filter(id=meetup_id)
-        .annotate(is_like=Exists(MeetupLike.objects.filter(user=user, meetup_id=meetup_id)))
-        .first()
-    )
-    print(meetup.like_count)
+    if user.is_authenticated:
+        is_like_annotation = Exists(MeetupLike.objects.filter(meetup_id=OuterRef("id"), user=user))
+    else:
+        is_like_annotation = Value(False, output_field=BooleanField())
+
+    meetup = Meetup.objects.filter(id=meetup_id).annotate(is_like=is_like_annotation).first()
 
     return 200, meetup

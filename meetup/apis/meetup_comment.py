@@ -107,9 +107,8 @@ def update_comment(request, comment_id, payload: MeetupCommentCreateSchema):
         return 404, {"message": "존재 하지 않은 댓글 입니다."}
     if user != comment.user:
         return 401, {"message": "권한이 없습니다."}
-    for attr, value in payload.model_dump(by_alias=False).items():
-        setattr(comment, attr, value)
-    comment.save()
+    MeetupComment.objects.filter(id=comment_id).update(**payload.model_dump(by_alias=False))
+    comment.refresh_from_db()
     return 200, comment
 
 

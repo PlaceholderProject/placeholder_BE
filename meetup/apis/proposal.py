@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
+from typing import List
+
 from ninja import Router
+from ninja.pagination import paginate
 
 from meetup.apis.meetup import meetup_router
 from meetup.models import Meetup, Member
 from meetup.models.proposal import Proposal
 from meetup.schemas.proposal import (
     ProposalCreateSchema,
-    ProposalListResultSchema,
     ProposalListSchema,
     ProposalSchema,
 )
 from notification.models import Notification
+from placeholder.pagination import CustomPagination
 from placeholder.schemas.base import ErrorSchema
 from placeholder.utils.auth import JWTAuth
 from placeholder.utils.decorators import handle_exceptions
@@ -20,12 +23,13 @@ proposal_router = Router(tags=["Proposal"])
 
 @meetup_router.get(
     "{meetup_id}/proposal",
-    response={200: ProposalListResultSchema, 401: ErrorSchema},
+    response=List[ProposalListSchema],
     auth=JWTAuth(),
     by_alias=True,
     tags=["Proposal"],
 )
 @handle_exceptions
+@paginate(CustomPagination)
 def get_proposals(request, meetup_id):
     meetup = Meetup.objects.filter(id=meetup_id).first()
     if not meetup:
@@ -34,7 +38,7 @@ def get_proposals(request, meetup_id):
         return 401, {"message": "권한이 없습니다."}
     proposals = Proposal.objects.prefetch_related("user").filter(meetup_id=meetup_id).all()
 
-    return 200, {"result": proposals}
+    return proposals
 
 
 @meetup_router.get(
