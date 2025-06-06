@@ -4,7 +4,17 @@ from typing import List, Optional
 from urllib.parse import unquote
 
 from django.db import transaction
-from django.db.models import BooleanField, Count, Exists, F, OuterRef, Q, Value
+from django.db.models import (
+    BooleanField,
+    Case,
+    Count,
+    Exists,
+    F,
+    OuterRef,
+    Q,
+    Value,
+    When,
+)
 from ninja import File, Query, Router, UploadedFile
 from ninja.pagination import paginate
 
@@ -52,10 +62,15 @@ def get_meetups(
 
     if user.is_authenticated:
         is_like_annotation = Exists(MeetupLike.objects.filter(meetup_id=OuterRef("id"), user=user))
+        is_organizer = Case(
+            When(organizer_id=user.id, then=Value(True)), default=Value(False), output_field=BooleanField()
+        )
     else:
         is_like_annotation = Value(False, output_field=BooleanField())
+        is_organizer = Value(False, output_field=BooleanField())
 
-    filters = {}
+    now = datetime.now()
+    filters = {"ad_ended_at__gte": now}
     if category:
         filters["category"] = category
     if place:
@@ -75,18 +90,18 @@ def get_meetups(
                 "meetupcomment",
                 filter=Q(meetupcomment__is_delete=False),
             ),
+            is_organizer=is_organizer,
         )
         .filter(**filters)
         .all()
     )
     if sort and sort in ["like", "latest", "deadline"]:
-        now = datetime.now()
         if sort == "like":
-            meetups = meetups.filter(ad_ended_at__lte=now).order_by("-like_count")
+            meetups = meetups.order_by("-like_count")
         elif sort == "latest":
-            meetups = meetups.filter(ad_ended_at__lte=now).order_by("-created_at")
+            meetups = meetups.order_by("-created_at")
         elif sort == "deadline":
-            meetups = meetups.filter(ad_ended_at__lte=now).order_by("-ad_ended_at")
+            meetups = meetups.order_by("-ad_ended_at")
 
     return meetups
 
@@ -100,8 +115,12 @@ def get_meetup(request, meetup_id: int):
 
     if user.is_authenticated:
         is_like_annotation = Exists(MeetupLike.objects.filter(meetup_id=OuterRef("id"), user=user))
+        is_organizer = Case(
+            When(organizer_id=user.id, then=Value(True)), default=Value(False), output_field=BooleanField()
+        )
     else:
         is_like_annotation = Value(False, output_field=BooleanField())
+        is_organizer = Value(False, output_field=BooleanField())
 
     now = datetime.now()
     meetup = (
@@ -109,6 +128,7 @@ def get_meetup(request, meetup_id: int):
         .annotate(
             is_like=is_like_annotation,
             comment_count=Count("meetupcomment", filter=Q(meetupcomment__is_delete=False)),
+            is_organizer=is_organizer,
         )
         .filter(id=meetup_id, ad_ended_at__gte=now)
         .first()

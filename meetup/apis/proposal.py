@@ -115,8 +115,8 @@ def accept_proposal(request, proposal_id):
         return 401, {"message": "권한이 없습니다."}
     proposal.status = Proposal.ProposalStatus.ACCEPTANCE.value
     proposal.save()
-    if not Member.objects.filter(user=user, meetup_id=meetup.id).exists():
-        Member.objects.create(user=user, meetup_id=meetup.id)
+    if not Member.objects.filter(user_id=proposal.user_id, meetup_id=meetup.id).exists():
+        Member.objects.create(user_id=proposal.user_id, meetup_id=meetup.id)
 
     Notification.objects.create(
         type=Notification.NotificationType.SENT_PROPOSAL.value,
