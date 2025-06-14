@@ -12,7 +12,10 @@
     "schedulecomment",
     //python packages
     "pydantic",
-    "simplejwt"
+    "simplejwt",
+    "boto",
+    "botocore",
+    "presigned"
     //python packages
   ],
   "ignorePaths": [

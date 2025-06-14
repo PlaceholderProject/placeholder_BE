@@ -26,11 +26,12 @@ from meetup.schemas.meetup import (
     MeetupSchema,
 )
 from placeholder.pagination import CustomPagination
-from placeholder.schemas.base import ErrorSchema
+from placeholder.schemas.base import ErrorSchema, PresignedUrlSchema
 from placeholder.utils.auth import JWTAuth, anonymous_user
 from placeholder.utils.decorators import handle_exceptions
 from placeholder.utils.enums import MeetupSort
 from placeholder.utils.exceptions import UnauthorizedAccessException
+from placeholder.utils.s3 import S3Service
 
 meetup_router = Router(tags=["Meetup"])
 
@@ -104,6 +105,15 @@ def get_meetups(
             meetups = meetups.order_by("-ad_ended_at")
 
     return meetups
+
+
+@meetup_router.get("presigned-url", response=PresignedUrlSchema, auth=JWTAuth(), by_alias=True)
+@handle_exceptions
+def get_presigned_url(request, filetype):
+    s3_service = S3Service()
+    filetype_list = filetype.split(",")
+    result = s3_service.create_multi_presigned_url("meetup", filetype_list)
+    return result
 
 
 @meetup_router.get(

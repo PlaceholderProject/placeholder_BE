@@ -10,7 +10,7 @@ class Meetup(BaseModel):
     description = models.TextField()
     place = models.CharField(max_length=255)
     place_description = models.TextField()
-    image = models.ImageField(verbose_name="이미지", upload_to="meetup_images", null=True, blank=True, default=None)
+    image = models.CharField(verbose_name="이미지", null=True, blank=True, default="")
     started_at = models.DateField(null=True, default=None)
     ended_at = models.DateField(null=True, default=None)
     ad_title = models.CharField(max_length=255)

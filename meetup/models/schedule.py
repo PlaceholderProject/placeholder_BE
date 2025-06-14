@@ -15,4 +15,4 @@ class Schedule(BaseModel):
     latitude = models.CharField(max_length=50, verbose_name="위도")
     longitude = models.CharField(max_length=50, verbose_name="경도")
     memo = models.CharField(max_length=50, verbose_name="메모")
-    image = models.ImageField(verbose_name="이미지", upload_to="schedule_images", null=True, blank=True, default=None)
+    image = models.CharField(verbose_name="이미지", null=True, blank=True, default="")

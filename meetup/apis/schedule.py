@@ -6,9 +6,10 @@ from ninja import File, Router, UploadedFile
 from meetup.apis.meetup import meetup_router
 from meetup.models import Meetup, Member, Schedule
 from meetup.schemas.schedule import ScheduleCreateSchema, ScheduleSchema
-from placeholder.schemas.base import ErrorSchema, ResultSchema
+from placeholder.schemas.base import ErrorSchema, PresignedUrlSchema, ResultSchema
 from placeholder.utils.auth import JWTAuth
 from placeholder.utils.decorators import handle_exceptions
+from placeholder.utils.s3 import S3Service
 
 schedule_router = Router(tags=["Schedule"])
 
@@ -77,6 +78,15 @@ def create_schedule(request, meetup_id, payload: ScheduleCreateSchema, image: Up
         schedule.participant.set([request.auth])
         schedule.save()
     return 201, schedule
+
+
+@schedule_router.get("presigned-url", response=PresignedUrlSchema, auth=JWTAuth(), by_alias=True)
+@handle_exceptions
+def get_presigned_url(request, filetype):
+    s3_service = S3Service()
+    filetype_list = filetype.split(",")
+    result = s3_service.create_multi_presigned_url("schedule", filetype_list)
+    return result
 
 
 @schedule_router.get(

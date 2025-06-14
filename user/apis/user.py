@@ -10,9 +10,11 @@ from ninja.pagination import paginate
 from meetup.models import Meetup, Proposal
 from meetup.schemas.proposal import ProposalListSchema
 from placeholder.pagination import CustomPagination
+from placeholder.schemas.base import PresignedUrlSchema
 from placeholder.utils.auth import JWTAuth
 from placeholder.utils.decorators import handle_exceptions
 from placeholder.utils.enums import MeetupStatus
+from placeholder.utils.s3 import S3Service
 from user.models.user import User
 from user.schemas.user import (
     MyAdSchema,
@@ -165,3 +167,12 @@ def get_received_proposals(request):
     proposals = Proposal.objects.prefetch_related("user").filter(meetup_id__in=meetups).exclude(user=user).all()
 
     return proposals
+
+
+@user_router.get("presigned-url", response=PresignedUrlSchema, auth=JWTAuth(), by_alias=True)
+@handle_exceptions
+def get_presigned_url(request, filetype):
+    s3_service = S3Service()
+    filetype_list = filetype.split(",")
+    result = s3_service.create_multi_presigned_url("user", filetype_list)
+    return result

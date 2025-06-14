@@ -1,6 +1,8 @@
-from pydantic.alias_generators import to_camel
+# -*- coding: utf-8 -*-
+from typing import List
+
 from ninja import Schema
-from typing import List, Dict
+from pydantic.alias_generators import to_camel
 
 
 class BaseSchema(Schema):
@@ -21,3 +23,7 @@ class ResultSchema(BaseSchema):
 
 class ErrorSchema(BaseSchema):
     message: str
+
+
+class PresignedUrlSchema(BaseSchema):
+    result: List

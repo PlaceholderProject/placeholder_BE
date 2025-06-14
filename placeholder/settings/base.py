@@ -170,3 +170,7 @@ LOGGING = {
         },
     },
 }
+
+AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID", default="")
+AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY", default="")
+AWS_S3_MEDIA_BUCKET_NAME = env("AWS_S3_MEDIA_BUCKET_NAME", default="")
