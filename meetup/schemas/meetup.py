@@ -21,6 +21,7 @@ class MeetupCreateSchema(BaseSchema):
     ad_ended_at: date
     is_public: bool
     category: str | None = None
+    image: str | None = ""
 
 
 class MeetupSchema(BaseSchema):

@@ -24,5 +24,5 @@ class ScheduleSchema(BaseSchema):
 
 
 ScheduleCreateSchema = create_schema(
-    Schedule, exclude=["id", "created_at", "updated_at", "image", "meetup", "participant"], base_class=BaseSchema
+    Schedule, exclude=["id", "created_at", "updated_at", "meetup", "participant"], base_class=BaseSchema
 )

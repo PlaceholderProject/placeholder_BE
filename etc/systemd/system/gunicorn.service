@@ -5,11 +5,11 @@ After=network.target
 [Service]
 User=ubuntu
 Group=www-data
-WorkingDirectory=/home/ubuntu/placeholder_BE/placeholder
+WorkingDirectory=/home/ubuntu/placeholder_BE
 ExecStart=/home/ubuntu/placeholder_BE/venv/bin/gunicorn \
         --workers 3 \
         --bind unix:/home/ubuntu/placeholder_BE/gunicorn.sock \
-        conf.wsgi:application
+        placeholder.wsgi:application
 
 [Install]
 WantedBy=multi-user.target

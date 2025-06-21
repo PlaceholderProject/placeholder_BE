@@ -15,7 +15,7 @@ from django.db.models import (
     Value,
     When,
 )
-from ninja import File, Query, Router, UploadedFile
+from ninja import Query, Router
 from ninja.pagination import paginate
 
 from meetup.models import Meetup, MeetupLike, Member
@@ -38,11 +38,11 @@ meetup_router = Router(tags=["Meetup"])
 
 @meetup_router.post("", response={201: MeetupSchema}, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
-def create_meetup(request, payload: MeetupCreateSchema, image: UploadedFile = File(None)):
+def create_meetup(request, payload: MeetupCreateSchema):
     user = request.auth
 
     with transaction.atomic():
-        meetup = Meetup.objects.create(**payload.dict(by_alias=False), organizer=user, image=image)
+        meetup = Meetup.objects.create(**payload.dict(by_alias=False), organizer=user)
         Member.objects.create(user=request.auth, meetup=meetup, role=Member.MemberRole.ORGANIZER.value)
     return 201, meetup
 
@@ -151,7 +151,7 @@ def get_meetup(request, meetup_id: int):
 
 @meetup_router.put("{meetup_id}", response={200: MeetupSchema, 404: ErrorSchema}, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
-def update_meetup(request, meetup_id: int, payload: MeetupCreateSchema, image: UploadedFile = File(None)):
+def update_meetup(request, meetup_id: int, payload: MeetupCreateSchema):
     user = request.auth
     meetup = (
         Meetup.objects.select_related("organizer")
@@ -165,9 +165,6 @@ def update_meetup(request, meetup_id: int, payload: MeetupCreateSchema, image: U
         raise UnauthorizedAccessException()
     for attr, value in payload.model_dump(by_alias=False).items():
         setattr(meetup, attr, value)
-
-    if image:
-        meetup.image = image
 
     meetup.save()
     return meetup

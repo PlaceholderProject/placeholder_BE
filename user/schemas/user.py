@@ -50,7 +50,7 @@ class UserCreateSchema(BaseSchema):
 
 UserSchema = create_schema(User, fields=["email", "nickname", "bio", "image"], base_class=BaseSchema)
 
-UserUpdateSchema = create_schema(User, fields=["nickname", "bio"], base_class=BaseSchema)
+UserUpdateSchema = create_schema(User, fields=["nickname", "bio", "image"], base_class=BaseSchema)
 
 UserProfileSchema = create_schema(User, fields=["id", "nickname", "image"], base_class=BaseSchema)
 

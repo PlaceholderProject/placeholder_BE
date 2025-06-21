@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.db import transaction
 from django.db.models import Count, Q
-from ninja import File, Router, UploadedFile
+from ninja import Router
 
 from meetup.apis.meetup import meetup_router
 from meetup.models import Meetup, Member, Schedule
@@ -67,14 +67,14 @@ def get_schedules(request, meetup_id):
     tags=["Schedule"],
 )
 @handle_exceptions
-def create_schedule(request, meetup_id, payload: ScheduleCreateSchema, image: UploadedFile = File(None)):
+def create_schedule(request, meetup_id, payload: ScheduleCreateSchema):
     meetup = Meetup.objects.filter(id=meetup_id).first()
     if not meetup:
         return 404, {"message": "존재 하지 않은 모임입니다."}
     if not Member.objects.filter(meetup_id=meetup_id, user=request.auth).exists():
         return 401, {"message": "권한이 없습니다."}
     with transaction.atomic():
-        schedule = Schedule.objects.create(**payload.dict(by_alias=False), meetup_id=meetup_id, image=image)
+        schedule = Schedule.objects.create(**payload.dict(by_alias=False), meetup_id=meetup_id)
         schedule.participant.set([request.auth])
         schedule.save()
     return 201, schedule

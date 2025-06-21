@@ -3,8 +3,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from django.db.models import BooleanField, Case, F, When
-from ninja import File, Form, Query, Router
-from ninja.files import UploadedFile
+from ninja import Query, Router
 from ninja.pagination import paginate
 
 from meetup.models import Meetup, Proposal
@@ -44,14 +43,12 @@ def get_user(request):
 
 @user_router.put("/me", response={200: UserSchema}, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
-def update_user(request, item: Form[UserUpdateSchema], image: UploadedFile = File(None)):
+def update_user(request, payload: UserUpdateSchema):
     user = request.auth
 
-    for attr, value in item.model_dump(by_alias=False).items():
+    for attr, value in payload.model_dump(by_alias=False).items():
         setattr(user, attr, value)
 
-    if image:
-        user.image = image
     user.save()
 
     return 200, user

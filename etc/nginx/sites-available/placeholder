@@ -1,0 +1,18 @@
+server {
+    listen 80;
+    server_name your_domain_or_ip;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location /static/ {
+        root /home/ubuntu/placeholder_BE;
+    }
+
+    location /media/ {
+        root /home/ubuntu/your_project;
+    }
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/home/ubuntu/your_project/your_project.sock;
+    }
+}
