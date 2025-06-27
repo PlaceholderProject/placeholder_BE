@@ -6,10 +6,10 @@ After=network.target
 User=ubuntu
 Group=www-data
 WorkingDirectory=/home/ubuntu/placeholder_BE
-ExecStart=/home/ubuntu/placeholder_BE/venv/bin/gunicorn \
-        --workers 3 \
-        --bind unix:/home/ubuntu/placeholder_BE/gunicorn.sock \
-        placeholder.wsgi:application
+ExecStart=/home/ubuntu/placeholder_BE/venv/bin/gunicorn placeholder.asgi:application \
+    --workers 4 \
+    --worker-class uvicorn.workers.UvicornWorker \
+    --bind unix:/home/ubuntu/placeholder_BE/gunicorn.sock
 
 [Install]
 WantedBy=multi-user.target

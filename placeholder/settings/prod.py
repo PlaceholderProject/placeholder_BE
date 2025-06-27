@@ -7,9 +7,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
 
-ALLOWED_HOSTS = [
-    "localhost",
-]
+ALLOWED_HOSTS = ["place-holder.site", "www.place-holder.site"]
 
 STATIC_URL = "static/"
 

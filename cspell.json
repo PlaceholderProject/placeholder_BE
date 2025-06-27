@@ -13,6 +13,9 @@
     "gunicorn",
     "venv",
     "wsgi",
+    "Proto",
+    "asgi",
+    "uvicorn",
     //python packages
     "pydantic",
     "simplejwt",

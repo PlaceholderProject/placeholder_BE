@@ -1,18 +1,20 @@
 server {
     listen 80;
-    server_name your_domain_or_ip;
+    server_name place-holder.site www.place-holder.site;
 
-    location = /favicon.ico { access_log off; log_not_found off; }
+    location / {
+        proxy_pass http://unix:/home/ubuntu/placeholder_BE/gunicorn.sock;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
     location /static/ {
-        root /home/ubuntu/placeholder_BE;
+        alias /home/ubuntu/placeholder_BE/static/;
     }
 
     location /media/ {
-        root /home/ubuntu/your_project;
-    }
-
-    location / {
-        include proxy_params;
-        proxy_pass http://unix:/home/ubuntu/your_project/your_project.sock;
+        alias /home/ubuntu/placeholder_BE/media/;
     }
 }
