@@ -132,7 +132,6 @@ def get_meetup(request, meetup_id: int):
         is_like_annotation = Value(False, output_field=BooleanField())
         is_organizer = Value(False, output_field=BooleanField())
 
-    now = datetime.now()
     meetup = (
         Meetup.objects.select_related("organizer")
         .annotate(
@@ -140,7 +139,7 @@ def get_meetup(request, meetup_id: int):
             comment_count=Count("meetupcomment", filter=Q(meetupcomment__is_delete=False)),
             is_organizer=is_organizer,
         )
-        .filter(id=meetup_id, ad_ended_at__gte=now)
+        .filter(id=meetup_id)
         .first()
     )
     if not meetup:
