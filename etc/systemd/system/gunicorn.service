@@ -6,6 +6,8 @@ After=network.target
 User=ubuntu
 Group=www-data
 WorkingDirectory=/home/ubuntu/placeholder_BE
+EnvironmentFile=/home/ubuntu/placeholder_BE/.env
+Environment="PATH=/home/ubuntu/placeholder_BE/venv/bin"
 ExecStart=/home/ubuntu/placeholder_BE/venv/bin/gunicorn placeholder.asgi:application \
     --workers 4 \
     --worker-class uvicorn.workers.UvicornWorker \

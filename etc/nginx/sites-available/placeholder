@@ -1,6 +1,6 @@
 server {
     listen 80;
-    server_name place-holder.site www.place-holder.site;
+    server_name api.place-holder.site;
 
     location / {
         proxy_pass http://unix:/home/ubuntu/placeholder_BE/gunicorn.sock;
