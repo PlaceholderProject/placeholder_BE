@@ -16,6 +16,10 @@
     "Proto",
     "asgi",
     "uvicorn",
+    "letsencrypt",
+    "fullchain",
+    "privkey",
+    "dhparams",
     //python packages
     "pydantic",
     "simplejwt",
