@@ -4,7 +4,9 @@ from placeholder.settings.base import *  # noqa: F403, F401
 DEBUG = True
 
 CORS_ALLOWED_ORIGINS = [
-    "api.place-holder.site",
+    "https://api.place-holder.site",
+    "https://www.place-holder.site",
+    "https://place-holder.site",
 ]
 
 ALLOWED_HOSTS = ["api.place-holder.site"]
