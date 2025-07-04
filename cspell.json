@@ -25,7 +25,8 @@
     "simplejwt",
     "boto",
     "botocore",
-    "presigned"
+    "presigned",
+    "Certbot"
     //python packages
   ],
   "ignorePaths": [
