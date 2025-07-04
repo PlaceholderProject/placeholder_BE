@@ -39,7 +39,7 @@ server {
     # Django Ninja API 요청 프록시
     location / {
         include proxy_params;
-        proxy_pass http://unix:/home/ubuntu/placeholder_BE/gunicorn.sock:;
+        proxy_pass http://unix:/home/ubuntu/placeholder_BE/gunicorn.sock;
         proxy_set_header Host              $host;
         proxy_set_header X-Real-IP         $remote_addr;
         proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
