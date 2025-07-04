@@ -6,7 +6,7 @@ After=network.target
 User=ubuntu
 Group=www-data
 WorkingDirectory=/home/ubuntu/placeholder_BE
-EnvironmentFile=/home/ubuntu/placeholder_BE/.env
+EnvironmentFile=/home/ubuntu/placeholder_BE/prod.env
 Environment="PATH=/home/ubuntu/placeholder_BE/venv/bin"
 ExecStart=/home/ubuntu/placeholder_BE/venv/bin/gunicorn placeholder.asgi:application \
     --workers 4 \
