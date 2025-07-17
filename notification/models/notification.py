@@ -31,5 +31,7 @@ class Notification(BaseModel):
             return f"/ad/{self.model_id}/"
         elif self.type == "schedule_comment":
             return f"/schedule/{self.model_id}/"
-        elif self.type in ["sent_proposal", "received_proposal"]:
-            return f"/proposal/{self.model_id}/"
+        elif self.type == "sent_proposal":
+            return "/my-space/sent-proposal"
+        elif self.type == "received_proposal":
+            return "/my-space/received-proposal"

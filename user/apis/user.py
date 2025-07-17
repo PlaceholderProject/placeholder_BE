@@ -105,7 +105,7 @@ def get_my_meetups(
 @user_router.get("/me/ad", response=List[MyAdSchema], auth=JWTAuth())
 @handle_exceptions
 @paginate(CustomPagination)
-def get_my_ads(request, status: Optional[str] = Query(None, description="광고 상태 (ongoing 또는 ended)")):
+def get_my_ads(request, status: Optional[MeetupStatus] = Query(None, description="광고 상태")):
     user = request.auth
     now = datetime.now()
 
@@ -148,20 +148,23 @@ def get_my_proposals(request):
 
 
 @user_router.get(
-    "me/proposal/received",
+    "me/meetup/{meetup_id}/proposal",
     response=List[ProposalListSchema],
     auth=JWTAuth(),
     by_alias=True,
 )
 @handle_exceptions
 @paginate(CustomPagination)
-def get_received_proposals(request):
+def get_received_proposals(
+    request, meetup_id, status: Optional[Proposal.ProposalStatus] = Query(None, description="신청 상태")
+):
     user = request.auth
-    meetups = Meetup.objects.filter(organizer=user).all()
-    if not meetups:
-        return 404, {"message": "존재 하지 않은 모임입니다."}
-
-    proposals = Proposal.objects.prefetch_related("user").filter(meetup_id__in=meetups).exclude(user=user).all()
+    proposals = (
+        Proposal.objects.prefetch_related("user")
+        .filter(meetup_id=meetup_id, meetup__organizer=user, status=status)
+        .exclude(user=user)
+        .all()
+    )
 
     return proposals
 
