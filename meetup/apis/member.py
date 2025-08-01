@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.db import transaction
 from ninja import Router
 
 from meetup.apis.meetup import meetup_router
@@ -29,7 +30,11 @@ def delete_member(request, member_id):
     if not member:
         return 404, {"message": "존재 하지 않은 모임원 입니다."}
 
-    if request.auth not in [member.user, member.meetup.organizer]:
-        return 401, {"message": "권한이 없습니다."}
-    member.delete()
-    return 204, None
+    proposal_queryset = request.auth.proposal_set.filter(meetup=member.meetup)
+    if request.auth == member.user:
+        with transaction.atomic():
+            proposal_queryset.delete()
+            member.delete()
+        return 204, None
+
+    return 401, {"message": "권한이 없습니다."}
