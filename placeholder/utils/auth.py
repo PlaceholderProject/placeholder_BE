@@ -21,10 +21,8 @@ class JWTAuth(HttpBearer):
 
     def get_token(self, request):
         auth = request.headers.get("Authorization")
-        if auth:
-            scheme, token = auth.split(" ")
-            if scheme.lower() != "bearer":
-                return token
+        if auth and auth.startswith("Bearer "):
+            return auth[7:]  # Remove "Bearer " prefix
         raise UnauthorizedAccessException()
 
 

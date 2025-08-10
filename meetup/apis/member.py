@@ -5,36 +5,34 @@ from ninja import Router
 from meetup.apis.meetup import meetup_router
 from meetup.models.member import Member
 from meetup.schemas.member import MemberListResultSchema
-from placeholder.schemas.base import ErrorSchema
 from placeholder.utils.auth import JWTAuth
 from placeholder.utils.decorators import handle_exceptions
+from placeholder.utils.exceptions import ForbiddenException, NotFoundException
 
 member_router = Router(tags=["Member"])
 
 
 @meetup_router.get(
-    "{meetup_id}/member", response={200: MemberListResultSchema}, auth=JWTAuth(), by_alias=True, tags=["Member"]
+    "{meetup_id}/member", response=MemberListResultSchema, auth=JWTAuth(), by_alias=True, tags=["Member"]
 )
 @handle_exceptions
 def get_members(request, meetup_id):
     members = Member.objects.filter(meetup_id=meetup_id).all()
-    return 200, {"result": members}
+    return {"result": members}
 
 
-@member_router.delete(
-    "{member_id}", response={204: None, 401: ErrorSchema, 404: ErrorSchema}, auth=JWTAuth(), by_alias=True
-)
+@member_router.delete("{member_id}", response={204: None}, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
 def delete_member(request, member_id):
     member = Member.objects.select_related("meetup").filter(id=member_id).first()
     if not member:
-        return 404, {"message": "존재 하지 않은 모임원 입니다."}
+        raise NotFoundException("존재 하지 않은 모임원 입니다.")
 
     proposal_queryset = request.auth.proposal_set.filter(meetup=member.meetup)
     if request.auth == member.user:
         with transaction.atomic():
             proposal_queryset.delete()
             member.delete()
-        return 204, None
+        return None
 
-    return 401, {"message": "권한이 없습니다."}
+    raise ForbiddenException()

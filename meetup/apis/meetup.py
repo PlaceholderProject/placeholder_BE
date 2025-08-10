@@ -26,11 +26,11 @@ from meetup.schemas.meetup import (
     MeetupSchema,
 )
 from placeholder.pagination import CustomPagination
-from placeholder.schemas.base import ErrorSchema, PresignedUrlSchema
+from placeholder.schemas.base import PresignedUrlSchema
 from placeholder.utils.auth import JWTAuth, anonymous_user
 from placeholder.utils.decorators import handle_exceptions
 from placeholder.utils.enums import MeetupSort
-from placeholder.utils.exceptions import UnauthorizedAccessException
+from placeholder.utils.exceptions import NotFoundException, UnauthorizedAccessException
 from placeholder.utils.s3 import S3Service
 
 meetup_router = Router(tags=["Meetup"])
@@ -44,7 +44,7 @@ def create_meetup(request, payload: MeetupCreateSchema):
     with transaction.atomic():
         meetup = Meetup.objects.create(**payload.dict(by_alias=False), organizer=user)
         Member.objects.create(user=request.auth, meetup=meetup, role=Member.MemberRole.ORGANIZER.value)
-    return 201, meetup
+    return meetup
 
 
 @meetup_router.get("", response=List[MeetupListSchema], auth=[JWTAuth(), anonymous_user], by_alias=True)
@@ -116,9 +116,7 @@ def get_presigned_url(request, filetype):
     return result
 
 
-@meetup_router.get(
-    "{meetup_id}", response={200: MeetupSchema, 404: ErrorSchema}, auth=[JWTAuth(), anonymous_user], by_alias=True
-)
+@meetup_router.get("{meetup_id}", response=MeetupSchema, auth=[JWTAuth(), anonymous_user], by_alias=True)
 @handle_exceptions
 def get_meetup(request, meetup_id: int):
     user = request.auth
@@ -143,12 +141,12 @@ def get_meetup(request, meetup_id: int):
         .first()
     )
     if not meetup:
-        return 404, {"message": "존재 하지 않은 모임 입니다."}
+        raise NotFoundException("존재 하지 않은 모임 입니다.")
 
-    return 200, meetup
+    return meetup
 
 
-@meetup_router.put("{meetup_id}", response={200: MeetupSchema, 404: ErrorSchema}, auth=JWTAuth(), by_alias=True)
+@meetup_router.put("{meetup_id}", response=MeetupSchema, auth=JWTAuth(), by_alias=True)
 @handle_exceptions
 def update_meetup(request, meetup_id: int, payload: MeetupCreateSchema):
     user = request.auth
@@ -159,7 +157,7 @@ def update_meetup(request, meetup_id: int, payload: MeetupCreateSchema):
         .first()
     )
     if not meetup:
-        return 404, {"message": "존재 하지 않은 모임 입니다."}
+        raise NotFoundException("존재 하지 않은 모임 입니다.")
     if meetup.organizer != user:
         raise UnauthorizedAccessException()
     for attr, value in payload.model_dump(by_alias=False).items():
@@ -169,34 +167,32 @@ def update_meetup(request, meetup_id: int, payload: MeetupCreateSchema):
     return meetup
 
 
-@meetup_router.delete("{meetup_id}", response={204: None, 404: ErrorSchema}, auth=JWTAuth())
+@meetup_router.delete("{meetup_id}", response={204: None}, auth=JWTAuth())
 @handle_exceptions
 def delete_meetup(request, meetup_id: int):
     meetup = Meetup.objects.filter(id=meetup_id).first()
     if not meetup:
-        return 404, {"message": "존재 하지 않은 모임 입니다."}
+        raise NotFoundException("존재 하지 않은 모임 입니다.")
     if meetup.organizer != request.auth:
         raise UnauthorizedAccessException()
     meetup.delete()
-    return 204, None
+    return None
 
 
-@meetup_router.post("{meetup_id}/like", response={200: None, 204: None}, auth=JWTAuth())
+@meetup_router.post("{meetup_id}/like", response=None, auth=JWTAuth())
 @handle_exceptions
 def like_meetup(request, meetup_id: int):
     user = request.auth
     like, is_create = MeetupLike.objects.get_or_create(user=user, meetup_id=meetup_id)
     if is_create:
         Meetup.objects.filter(id=meetup_id).update(like_count=F("like_count") + 1)
-        return 200, None
+        return None
     like.delete()
     Meetup.objects.filter(id=meetup_id).update(like_count=F("like_count") - 1)
-    return 204, None
+    return None
 
 
-@meetup_router.get(
-    "{meetup_id}/like", response={200: MeetupLikeSchema}, auth=[JWTAuth(), anonymous_user], by_alias=True
-)
+@meetup_router.get("{meetup_id}/like", response=MeetupLikeSchema, auth=[JWTAuth(), anonymous_user], by_alias=True)
 @handle_exceptions
 def get_meetup_like(request, meetup_id: int):
     user = request.auth
@@ -208,4 +204,4 @@ def get_meetup_like(request, meetup_id: int):
 
     meetup = Meetup.objects.filter(id=meetup_id).annotate(is_like=is_like_annotation).first()
 
-    return 200, meetup
+    return meetup
