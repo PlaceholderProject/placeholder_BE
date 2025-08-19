@@ -26,8 +26,23 @@
     "boto",
     "botocore",
     "presigned",
-    "Certbot"
+    "Certbot",
     //python packages
+    //Django/pytest terms
+    "pytest",
+    "makemigrations",
+    "createsuperuser",
+    "runserver",
+    "isort",
+    "htmlcov",
+    "pycache",
+    "noinput",
+    "autouse",
+    //XML/sitemap terms
+    "urlset",
+    "changefreq",
+    "lastmod",
+    "reparsed"
   ],
   "ignorePaths": [
     "venv/**",
